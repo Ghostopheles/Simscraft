@@ -1,8 +1,9 @@
 --- INSTRUCTIONS
 --- To add your own music:
 ---     Copy the music file (mp3 only pls) to the Assets folder inside the addon
----     Add an entry to the table below using the format
----     Name = Duration (in seconds)
+---     Add an entry to the table below using the below format
+---       Name = Duration (in seconds)
+---     Do not include the file extension in the name
 
 local _, internal = ...;
 
