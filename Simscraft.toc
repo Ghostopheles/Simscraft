@@ -1,9 +1,10 @@
 ## Interface: 120000
-## Title: BuilderTunes
+## Title: Simscraft
 ## Notes: Augments your housing experience with some inspirational music
 ## Author: Ghostopheles
 ## Version: @project-version@
 ## IconTexture: Interface/ICONS/inv_babypotadpole_red
+## OnlyBetaAndPTR: 1
 
 ## X-License: Public Domain
 
@@ -20,4 +21,4 @@
 ## Category-zhTW: 材質
 
 Music.lua
-BuilderTunes.lua
+Simscraft.lua

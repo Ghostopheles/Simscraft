@@ -99,10 +99,24 @@ local function OnHouseEditorModeChanged(newMode)
     end
 end
 
+local function OnModifierStateChanged(key, down)
+    if not C_HouseEditor.IsHouseEditorActive() then
+        return;
+    end
+
+    if key == "LALT" then
+        local enabled = down == 0 and true or false;
+        C_HousingBasicMode.SetGridSnapEnabled(enabled);
+    end
+end
+
 local f = CreateFrame("Frame");
 f:RegisterEvent("HOUSE_EDITOR_MODE_CHANGED");
+f:RegisterEvent("MODIFIER_STATE_CHANGED");
 f:SetScript("OnEvent", function(self, event, ...)
     if event == "HOUSE_EDITOR_MODE_CHANGED" then
         OnHouseEditorModeChanged(...);
+    elseif event == "MODIFIER_STATE_CHANGED" then
+        OnModifierStateChanged(...);
     end
 end);
