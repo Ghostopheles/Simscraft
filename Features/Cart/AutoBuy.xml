@@ -1,0 +1,47 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
+
+    <Script file="AutoBuy.lua" />
+
+    <Frame name="ShoppingCartEntryTemplate" mixin="ShoppingCartEntryMixin" virtual="true">
+        <Size y="25" />
+        <Frames>
+            <ItemButton parentKey="ItemButton" scale="0.75">
+                <Anchors>
+                    <Anchor point="LEFT" x="5" />
+                </Anchors>
+            </ItemButton>
+            <EditBox parentKey="QuantityEditBox" inherits="InputBoxTemplate" autoFocus="false"
+                numeric="true">
+                <Size x="50" y="25" />
+                <Anchors>
+                    <Anchor point="RIGHT" x="-25" y="1" />
+                </Anchors>
+            </EditBox>
+            <Button parentKey="RemoveButton" inherits="UIPanelCloseButtonNoScripts">
+                <Size x="20" y="20" />
+                <Anchors>
+                    <Anchor point="RIGHT" />
+                </Anchors>
+            </Button>
+        </Frames>
+        <Layers>
+            <Layer level="ARTWORK">
+                <FontString parentKey="ItemLabel" inherits="GameFontWhite" justifyH="CENTER"
+                    justifyV="MIDDLE">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.ItemButton" relativePoint="RIGHT"
+                            x="5" />
+                        <Anchor point="RIGHT" relativeKey="$parent.QuantityEditBox"
+                            relativePoint="LEFT" x="-10" />
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+
+        <Scripts>
+            <OnLoad method="OnLoad" />
+        </Scripts>
+    </Frame>
+
+</Ui>

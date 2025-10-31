@@ -22,3 +22,5 @@
 
 Music.lua
 Simscraft.lua
+
+Features/Cart/AutoBuy.xml
