@@ -1,11 +1,11 @@
-local _, internal = ...;
+local addonName, internal = ...;
 
 ---@class SoundFile
 ---@field Path string
 ---@field Duration number
 
 local function MakePath(fileName)
-    return "Interface/AddOns/BuilderTunes/Assets/" .. fileName .. ".mp3";
+    return format("Interface/AddOns/%s/Assets/%s.mp3", addonName, fileName);
 end
 
 ---@param fileName string
