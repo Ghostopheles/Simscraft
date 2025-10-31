@@ -1,4 +1,4 @@
-# BuilderTunes
+# Simscraft
 
 An addon for playing custom music while editing your house in World of Warcraft: Midnight
 
