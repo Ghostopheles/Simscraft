@@ -4,6 +4,8 @@
 -- TODO: handle showing/hiding the shopping cart frame
 -- TODO: maybe enable hyperlinks on the item labels?
 -- TODO: add gold cost per entry
+-- TODO: add support for item currencies
+-- TODO: adding an item to the cart should scroll down to the newest entry
 
 -- NOTE: you may run into issues shift-clicking on things if they support stack purchasing. too bad!
 
@@ -141,6 +143,10 @@ ScrollView:SetDataProvider(DataProvider);
 
 ------
 
+local OnCartDataChanged;
+
+------
+
 ---@class ShoppingCartEntry
 ---@field MerchantIndex number
 ---@field Quantity number
@@ -151,6 +157,15 @@ function Cart.Flush()
 end
 
 function Cart.Refresh()
+    local hasItemsInCart = DataProvider:GetSize() > 0;
+    local totalCartCost = Cart.CalculateTotalCartPrice();
+    local canAfford = Cart.CanPlayerAffordPurchase();
+
+    MoneyFrame:SetShown(hasItemsInCart);
+    MoneyFrame_Update(MoneyFrame, totalCartCost);
+
+    PurchaseButton:SetEnabled(hasItemsInCart and canAfford);
+    HelpText:SetShown(not hasItemsInCart);
     ScrollView:ReinitializeFrames();
 end
 
@@ -315,18 +330,7 @@ end
 
 ------
 
-local function OnDataChanged()
-    local hasItemsInCart = DataProvider:GetSize() > 0;
-    local totalCartCost = Cart.CalculateTotalCartPrice();
-    local canAfford = Cart.CanPlayerAffordPurchase();
-
-    MoneyFrame:SetShown(hasItemsInCart);
-    MoneyFrame_Update(MoneyFrame, totalCartCost);
-
-    PurchaseButton:SetEnabled(hasItemsInCart and canAfford);
-    HelpText:SetShown(not hasItemsInCart);
-end
-ScrollView:RegisterCallback("OnDataChanged", OnDataChanged);
+ScrollView:RegisterCallback("OnDataChanged", Cart.Refresh);
 
 ------------
 
