@@ -12,8 +12,8 @@ local Setting = {
 internal.Setting = Setting;
 
 local defaultConfig = {
-    [internal.Setting.PlayHouseEditorMusic] = true,
-    [internal.Setting.EnableAltGridSnapToggle] = true,
+    [internal.Setting.PlayHouseEditorMusic] = false,
+    [internal.Setting.EnableAltGridSnapToggle] = false,
     [internal.Setting.EnableAutoBuy] = true
 };
 
