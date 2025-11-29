@@ -1,6 +1,5 @@
 # Simscraft
-
-An addon for playing custom music while editing your house in World of Warcraft: Midnight
+A housing quality-of-life addon.
 
 ## Custom Music
 To add your own music:
