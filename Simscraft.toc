@@ -1,6 +1,6 @@
-## Interface: 120000
-## Title: Simscraft
-## Notes: Augments your housing experience with some inspirational music
+## Interface: 110207, 120000
+## Title: |cffa6e329Simscraft|r
+## Notes: Augments your housing experience with the highest-quality housing helpers.
 ## Author: Ghostopheles
 ## Version: @project-version@
 ## IconTexture: Interface/ICONS/inv_babypotadpole_red

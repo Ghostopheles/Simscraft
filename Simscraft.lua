@@ -1,5 +1,9 @@
+local addonName = ...;
+
 ---@class SimscraftInternal
 local internal = select(2, ...);
+
+internal.ThemeColor = CreateColorFromHexString("ffa6e329");
 
 ---@enum SimscraftEvents
 local Events = {
@@ -44,6 +48,6 @@ end);
 
 ---@param msg string
 function internal.Print(msg)
-    local prefix = "|cfffc037bSimscraft|r: ";
+    local prefix = internal.ThemeColor:WrapTextInColorCode(addonName) .. ": ";
     print(prefix .. msg);
 end

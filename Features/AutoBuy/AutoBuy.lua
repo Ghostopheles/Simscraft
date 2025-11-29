@@ -108,7 +108,7 @@ end
 local ShoppingCartFrame = CreateFrame("Frame", "SimscraftShoppingCartFrame", MerchantFrame, "PortraitFrameFlatTemplate");
 ButtonFrameTemplate_HidePortrait(ShoppingCartFrame);
 ShoppingCartFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 10, 0);
-ShoppingCartFrame:SetTitle(addonName .. " Shopping Cart");
+ShoppingCartFrame:SetTitle(internal.ThemeColor:WrapTextInColorCode(addonName) .. " Shopping Cart");
 ShoppingCartFrame:SetSize(350, 400);
 
 local PURCHASE_BUTTON_DEFAULT_TEXT = PERKS_PROGRAM_CART_PURCHASE_TOOLTIP;
