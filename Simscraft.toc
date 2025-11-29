@@ -10,17 +10,17 @@
 
 ## X-License: Public Domain
 
-## Category: Media
-## Category-deDE: Medien
-## Category-esES: Medios
-## Category-esMX: Medios
-## Category-frFR: Médias
-## Category-itIT: Media
-## Category-koKR: 미디어
-## Category-ptBR: Mídia
-## Category-ruRU: Медиа
-## Category-zhCN: 材质
-## Category-zhTW: 材質
+## Category: Expansion Features
+## Category-deDE: Erweiterungsfeatures
+## Category-esES: Características
+## Category-esMX: Características de expansiones
+## Category-frFR: Contenu d’extension
+## Category-itIT: Contenuti specifici per espansioni
+## Category-koKR: 확장팩 특징
+## Category-ptBR: Características da Expansão
+## Category-ruRU: Особый контент
+## Category-zhCN: 特色更新
+## Category-zhTW: 資料片特色
 
 Simscraft.lua
 Settings.lua
