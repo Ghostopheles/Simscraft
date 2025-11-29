@@ -434,7 +434,7 @@ function Cart.OnAsyncPurchaseComplete()
     Cart.StopAsyncPurchase();
     HidePurchaseOverlay();
     PlaySound(PURCHASE_COMPLETION_SOUNDKIT);
-    FlashClientIcon(true);
+    FlashClientIcon();
 end
 
 function Cart.StopAsyncPurchase()
