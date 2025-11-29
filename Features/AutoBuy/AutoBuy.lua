@@ -9,8 +9,16 @@
 
 -- NOTE: you may run into issues shift-clicking on things if they support stack purchasing. too bad!
 
+---@class SimscraftInternal
+local internal = select(2, ...);
+
 local ASYNC_PURCHASE_STEP = 1; -- in seconds
 local MAX_PURCHASE_ACTIONS_PER_SECOND = 5;
+local HIGH_COST_THRESHOLD = 25000000; -- 2,500 gold
+
+local function IsAutoBuyEnabled()
+    return internal.Settings.GetSetting("EnableAutoBuy");
+end
 
 ------------
 
@@ -39,6 +47,14 @@ function ShoppingCartEntryMixin:Init(data)
     self.ItemButton:SetItem(itemLink);
     self.ItemLabel:SetText(itemLink);
     self.QuantityEditBox:SetNumber(data.Quantity);
+
+    local itemCost = C_MerchantFrame.GetItemInfo(data.Index).price;
+    if itemCost then
+        local itemCostString = C_CurrencyInfo.GetCoinTextureString(itemCost);
+        self.ItemCost:SetText("x " .. itemCostString);
+    else
+        self.ItemCost:SetText("");
+    end
 end
 
 function ShoppingCartEntryMixin:UpdateQuantityFromEditBox()
@@ -70,7 +86,7 @@ local ShoppingCartFrame = CreateFrame("Frame", "ShoppingCartFrame", MerchantFram
 ButtonFrameTemplate_HidePortrait(ShoppingCartFrame);
 ShoppingCartFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 10, 0);
 ShoppingCartFrame:SetTitle("Shopping Cart");
-ShoppingCartFrame:SetSize(300, 400);
+ShoppingCartFrame:SetSize(350, 400);
 
 local PurchaseButton = CreateFrame("Button", nil, ShoppingCartFrame, "SharedGoldRedButtonLargeTemplate");
 PurchaseButton:SetPoint("BOTTOM", 0, 20);
@@ -140,10 +156,6 @@ ScrollView:SetElementInitializer("ShoppingCartEntryTemplate", InitializeCartEntr
 
 local DataProvider = CreateDataProvider();
 ScrollView:SetDataProvider(DataProvider);
-
-------
-
-local OnCartDataChanged;
 
 ------
 
@@ -341,6 +353,10 @@ local function HookItemButtons()
         if not HookedButtons[button] then
             HookedButtons[button] = true;
             button:HookScript("OnClick", function(self, mouseButton)
+                if not IsAutoBuyEnabled() then
+                    return;
+                end
+
                 if IsShiftKeyDown() and mouseButton == "RightButton" then
                     local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
                     Cart.AddItemToCartByIndex(index);
@@ -351,6 +367,12 @@ local function HookItemButtons()
 end
 
 local function OnMerchantShow()
+    if not IsAutoBuyEnabled() then
+        ShoppingCartFrame:Hide();
+        return;
+    end
+
+    ShoppingCartFrame:Show();
     Cart.Flush();
     HookItemButtons();
 end

@@ -13,9 +13,9 @@
             </ItemButton>
             <EditBox parentKey="QuantityEditBox" inherits="InputBoxTemplate" autoFocus="false"
                 numeric="true">
-                <Size x="50" y="25" />
+                <Size x="40" y="25" />
                 <Anchors>
-                    <Anchor point="RIGHT" x="-25" y="1" />
+                    <Anchor point="RIGHT" x="-75" y="1" />
                 </Anchors>
             </EditBox>
             <Button parentKey="RemoveButton" inherits="UIPanelCloseButtonNoScripts">
@@ -34,6 +34,15 @@
                             x="5" />
                         <Anchor point="RIGHT" relativeKey="$parent.QuantityEditBox"
                             relativePoint="LEFT" x="-10" />
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="ItemCost" inherits="GameFontWhite" justifyH="RIGHT"
+                    justifyV="MIDDLE">
+                    <Anchors>
+                        <Anchor point="RIGHT" relativeKey="$parent.RemoveButton" relativePoint="LEFT"
+                            x="-4" />
+                        <Anchor point="LEFT" relativeKey="$parent.QuantityEditBox"
+                            relativePoint="RIGHT" />
                     </Anchors>
                 </FontString>
             </Layer>

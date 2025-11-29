@@ -4,6 +4,8 @@
 ## Author: Ghostopheles
 ## Version: @project-version@
 ## IconTexture: Interface/ICONS/inv_babypotadpole_red
+## LoadSavedVariablesFirst: 1
+## SavedVariables: SimscraftConfig
 ## OnlyBetaAndPTR: 1
 
 ## X-License: Public Domain
@@ -20,7 +22,12 @@
 ## Category-zhCN: 材质
 ## Category-zhTW: 材質
 
-Music.lua
 Simscraft.lua
+Settings.lua
+SettingsDefinitions.lua
+
+MusicDefinitions.lua
+Music.lua
 
 Features/AutoBuy/AutoBuy.xml
+Features/Tweaks.lua
