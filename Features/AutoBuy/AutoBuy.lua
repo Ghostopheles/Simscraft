@@ -13,6 +13,9 @@ local internal = select(2, ...);
 local ASYNC_PURCHASE_STEP = 0.5; -- in seconds
 local MAX_PURCHASE_ACTIONS_PER_TICK = 5;
 local HIGH_COST_THRESHOLD = 25000000; -- 2,500 gold
+local PURCHASE_COMPLETION_SOUNDKIT = SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE;
+-- SOUNDKIT.UI_EVENT_SCHEDULER_CHIME
+-- SOUNDKIT.TRADING_POST_UI_PURCHASE_CELEBRATION
 
 local function IsAutoBuyEnabled()
     return internal.Settings.GetSetting("EnableAutoBuy");
@@ -154,7 +157,7 @@ OverlayProgressBar:SetPoint("CENTER");
 local function InitOverlayProgressBar(maxValue)
     local self = OverlayProgressBar;
     self:SetMinMaxSmoothedValue(0, maxValue);
-    self:SetSmoothedValue(0);
+    self:SetValue(0);
     self.ProgressText:SetTextToFit("");
     self.PurchasingText:SetTextToFit("Purchasing");
 end
@@ -430,6 +433,8 @@ function Cart.OnAsyncPurchaseComplete()
     Cart.Flush();
     Cart.StopAsyncPurchase();
     HidePurchaseOverlay();
+    PlaySound(PURCHASE_COMPLETION_SOUNDKIT);
+    FlashClientIcon(true);
 end
 
 function Cart.StopAsyncPurchase()
