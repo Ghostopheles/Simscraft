@@ -1,9 +1,14 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 
-    <Script file="AutoBuy.lua" />
+    <Button name="SimscraftClearCartButtonTemplate" inherits="UIButtonTemplate" virtual="true">
+        <Size x="40" y="40"/>
+        <KeyValues>
+            <KeyValue key="buttonArtKit" value="128-RedButton-Delete" type="string" />
+        </KeyValues>
+    </Button>
 
-    <Frame name="ShoppingCartEntryTemplate" mixin="ShoppingCartEntryMixin" virtual="true">
+    <Frame name="SimscraftShoppingCartEntryTemplate" mixin="ShoppingCartEntryMixin" virtual="true">
         <Size y="25" />
         <Frames>
             <ItemButton parentKey="ItemButton" scale="0.75">
@@ -27,7 +32,7 @@
         </Frames>
         <Layers>
             <Layer level="ARTWORK">
-                <FontString parentKey="ItemLabel" inherits="GameFontWhite" justifyH="CENTER"
+                <FontString parentKey="ItemLabel" inherits="GameFontWhite" justifyH="LEFT"
                     justifyV="MIDDLE">
                     <Anchors>
                         <Anchor point="LEFT" relativeKey="$parent.ItemButton" relativePoint="RIGHT"
@@ -52,5 +57,40 @@
             <OnLoad method="OnLoad" />
         </Scripts>
     </Frame>
+
+    <StatusBar name="SimscraftPurchaseOverlayProgressBarTemplate" mixin="SmoothStatusBarMixin" frameBuffer="true" virtual="true">
+        <Size x="275" y="15"/>
+        <BarTexture parentKey="BarFill" atlas="housing-dashboard-fillbar-fill"/>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="BarBackground" atlas="housing-dashboard-fillbar-bar-bg" setAllPoints="true"/>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString parentKey="ProgressText" justifyH="CENTER" justifyV="MIDDLE" inherits="GameFontWhite">
+                    <Anchors>
+                        <Anchor point="CENTER"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Frame parentKey="BarEnd" useParentLevel="true" hidden="true">
+                <Size x="1" y="25"/>
+                <Layers>
+                    <Layer level="OVERLAY">
+                        <Texture parentKey="Overlay" atlas="housing-dashboard-fillbar-fill-threshold">
+                            <Size x="1" y="25"/>
+                            <Anchors>
+                                <Anchor point="LEFT"/>
+                                <Anchor point="RIGHT"/>
+                            </Anchors>
+                        </Texture>
+                    </Layer>
+                </Layers>
+            </Frame>
+        </Frames>
+    </StatusBar>
+
+    <Script file="AutoBuy.lua" />
 
 </Ui>

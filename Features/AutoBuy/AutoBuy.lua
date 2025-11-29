@@ -1,13 +1,12 @@
 -- TODO: add some graphic or progress indicator when performing an async purchase
 -- TODO: add on OnTabPressed handler to the entries to enable tabbing down the list via the editboxes
--- TODO: add a confirmation dialog when the total purchase cost is high
 -- TODO: handle showing/hiding the shopping cart frame
 -- TODO: maybe enable hyperlinks on the item labels?
--- TODO: add gold cost per entry
 -- TODO: add support for item currencies
--- TODO: adding an item to the cart should scroll down to the newest entry
 
 -- NOTE: you may run into issues shift-clicking on things if they support stack purchasing. too bad!
+
+local addonName = ...;
 
 ---@class SimscraftInternal
 local internal = select(2, ...);
@@ -23,6 +22,28 @@ end
 ------------
 
 local Cart = {};
+
+StaticPopupDialogs["SIMSCRAFT_CLEAR_CART_CONFIRM"] = {
+    text = 	PERKS_PROGRAM_CART_CLEAR_POPUP_TEXT,
+    button1 = PERKS_PROGRAM_CART_CLEAR_POPUP_CONFIRMATION,
+    button2 = CANCEL,
+    OnAccept = function() Cart.Flush(); end,
+    hideOnEscape = true,
+    timeout = 0,
+    exclusive = true,
+    showAlert = true
+};
+
+StaticPopupDialogs["SIMSCRAFT_PURCHASE_CONFIRM"] = {
+    text = 	PERKS_PROGRAM_CART_PURCHASE_POPUP_TEXT,
+    button1 = YES,
+    button2 = NO,
+    OnAccept = function() Cart.AsyncFinalizePurchase(); end,
+    hideOnEscape = true,
+    timeout = 0,
+    exclusive = true,
+    showAlert = true
+};
 
 ------------
 
@@ -82,30 +103,33 @@ end
 
 ------------
 
-local ShoppingCartFrame = CreateFrame("Frame", "ShoppingCartFrame", MerchantFrame, "PortraitFrameFlatTemplate");
+local ShoppingCartFrame = CreateFrame("Frame", "SimscraftShoppingCartFrame", MerchantFrame, "PortraitFrameFlatTemplate");
 ButtonFrameTemplate_HidePortrait(ShoppingCartFrame);
 ShoppingCartFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 10, 0);
-ShoppingCartFrame:SetTitle("Shopping Cart");
+ShoppingCartFrame:SetTitle(addonName .. " Shopping Cart");
 ShoppingCartFrame:SetSize(350, 400);
 
+local PURCHASE_BUTTON_DEFAULT_TEXT = PERKS_PROGRAM_CART_PURCHASE_TOOLTIP;
+
 local PurchaseButton = CreateFrame("Button", nil, ShoppingCartFrame, "SharedGoldRedButtonLargeTemplate");
-PurchaseButton:SetPoint("BOTTOM", 0, 20);
-PurchaseButton:SetSize(150, 50);
-PurchaseButton:SetText(PURCHASE);
+PurchaseButton:SetPoint("BOTTOMRIGHT", -18, 8);
+PurchaseButton:SetHeight(40);
+PurchaseButton:SetText(PURCHASE_BUTTON_DEFAULT_TEXT);
 PurchaseButton:SetScript("OnClick", function()
-    Cart.AsyncFinalizePurchase();
+    Cart.ConfirmPurchase();
+end);
+PurchaseButton:SetScript("OnShow", function()
+    PurchaseButton:SetText(PURCHASE_BUTTON_DEFAULT_TEXT);
 end);
 
-ShoppingCartFrame.PurchaseButton = PurchaseButton;
+local ClearCartButton = CreateFrame("Button", nil, ShoppingCartFrame, "SimscraftClearCartButtonTemplate");
+ClearCartButton:SetPoint("BOTTOMLEFT", 18, 8);
+ClearCartButton:SetScript("OnClick", function()
+    Cart.ShowClearCartPopup();
+end);
+ClearCartButton.tooltipText = PERKS_PROGRAM_CART_CLEAR_TOOLTIP;
 
-local MoneyFrame = CreateFrame("Frame", nil, ShoppingCartFrame, "SmallMoneyFrameTemplate");
-MoneyFrame:SetPoint("TOP", PurchaseButton, "BOTTOM", 40, -1);
-MoneyFrame_SetType(MoneyFrame, "STATIC");
-MoneyFrame_Update(MoneyFrame, 0);
-
-local MoneyFrameLabel = MoneyFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite");
-MoneyFrameLabel:SetPoint("RIGHT", MoneyFrame, "LEFT", -5, 0);
-MoneyFrameLabel:SetText(ITEM_UPGRADE_COST_LABEL);
+PurchaseButton:SetPoint("LEFT", ClearCartButton, "RIGHT", 10, 0);
 
 local HelpText = ShoppingCartFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite");
 HelpText:SetPoint("CENTER", 0, 15);
@@ -116,8 +140,75 @@ HelpText:SetText("Your shopping cart is currently empty.");
 
 ------
 
+local PurchasingOverlay = CreateFrame("Frame", nil, ShoppingCartFrame);
+PurchasingOverlay:SetPoint("TOPLEFT", 5, -15);
+PurchasingOverlay:SetPoint("BOTTOMRIGHT", 0, 4);
+PurchasingOverlay:Hide();
+
+local OverlayTexture = PurchasingOverlay:CreateTexture(nil, "OVERLAY");
+OverlayTexture:SetColorTexture(0, 0, 0, 0.75);
+OverlayTexture:SetAllPoints();
+
+local OverlayProgressBar = CreateFrame("StatusBar", nil, PurchasingOverlay, "SimscraftPurchaseOverlayProgressBarTemplate");
+OverlayProgressBar:SetPoint("CENTER");
+OverlayProgressBar:SetScript("OnValueChanged", function(self)
+    local barEnd = self.BarEnd;
+    local barFill = self.BarFill;
+    if self:GetValue() > 0 then
+        barEnd:Show();
+        barEnd:SetPoint("LEFT", barFill, "LEFT", 0, 0);
+        barEnd:SetPoint("RIGHT", barFill, "RIGHT", 0, 0);
+    else
+        barEnd:Hide();
+        barEnd:ClearAllPoints();
+    end
+end);
+
+local function InitOverlayProgressBar(maxValue)
+    local self = OverlayProgressBar;
+    self:SetMinMaxSmoothedValue(0, maxValue);
+    self:SetSmoothedValue(0);
+end
+
+local function UpdateOverlayProgressBar(current)
+    local self = OverlayProgressBar;
+    self:SetSmoothedValue(current);
+    local _, max = self:GetMinMaxValues()
+    local progress = format("%d/%d", current, max);
+    self.ProgressText:SetTextToFit(progress);
+end
+
+local OverlayTextTicker;
+local OverlayTextStep = 1;
+local function ShowPurchaseOverlay(numItemsInCart)
+    PurchasingOverlay:Show();
+    InitOverlayProgressBar(numItemsInCart);
+    OverlayTextTicker = C_Timer.NewTicker(1, function()
+        local text = "Purchasing" .. strrep(".", OverlayTextStep);
+        OverlayProgressBar.ProgressText:SetTextToFit(text);
+        OverlayTextStep = OverlayTextStep + 1;
+        if OverlayTextStep > 3 then
+            OverlayTextStep = 1;
+        end
+    end);
+end
+
+local function HidePurchaseOverlay()
+    if OverlayTextTicker then
+        OverlayTextTicker:Cancel();
+        OverlayTextTicker = nil;
+        OverlayTextStep = 1;
+    end
+
+    PurchasingOverlay:Hide();
+end
+
+OverlayText = PurchasingOverlay:CreateFontString(nil, "OVERLAY", "GameFontWhite");
+OverlayText:SetPoint("BOTTOM", OverlayProgressBar, "TOP", 0, 5);
+
+------
+
 local ScrollBox = CreateFrame("Frame", nil, ShoppingCartFrame, "WowScrollBoxList");
-ScrollBox:SetInterpolateScroll(true);
 
 local ScrollBar = CreateFrame("EventFrame", nil, ShoppingCartFrame, "MinimalScrollBar");
 ScrollBar:SetPoint("TOPRIGHT", -5, -30);
@@ -139,10 +230,10 @@ ScrollUtil.AddManagedScrollBarVisibilityBehavior(ScrollBox, ScrollBar, anchorsWi
 
 ------
 
-local topPadding = 0;
-local bottomPadding = 0;
-local leftPadding = 2;
-local rightPadding = 0;
+local topPadding = 3;
+local bottomPadding = 3;
+local leftPadding = 3;
+local rightPadding = 3;
 local spacing = 5;
 
 local ScrollView = CreateScrollBoxListLinearView(topPadding, bottomPadding, leftPadding, rightPadding, spacing);
@@ -152,7 +243,7 @@ local function InitializeCartEntry(frame, itemLink)
     frame:Init(itemLink);
 end
 
-ScrollView:SetElementInitializer("ShoppingCartEntryTemplate", InitializeCartEntry);
+ScrollView:SetElementInitializer("SimscraftShoppingCartEntryTemplate", InitializeCartEntry);
 
 local DataProvider = CreateDataProvider();
 ScrollView:SetDataProvider(DataProvider);
@@ -173,10 +264,13 @@ function Cart.Refresh()
     local totalCartCost = Cart.CalculateTotalCartPrice();
     local canAfford = Cart.CanPlayerAffordPurchase();
 
-    MoneyFrame:SetShown(hasItemsInCart);
-    MoneyFrame_Update(MoneyFrame, totalCartCost);
-
     PurchaseButton:SetEnabled(hasItemsInCart and canAfford);
+    local coinTextureString = WHITE_FONT_COLOR:WrapTextInColorCode(C_CurrencyInfo.GetCoinTextureString(totalCartCost));
+    local purchaseText = PURCHASE_BUTTON_DEFAULT_TEXT .. " " .. coinTextureString;
+    PurchaseButton:SetText(purchaseText);
+
+    ClearCartButton:SetEnabled(hasItemsInCart);
+
     HelpText:SetShown(not hasItemsInCart);
     ScrollView:ReinitializeFrames();
 end
@@ -212,12 +306,15 @@ end
 function Cart.AddItemToCartByIndex(index)
     if Cart.IsItemInCartByIndex(index) then
         Cart.IncrementQuantityForItemInCartByIndex(index);
+        local entry = Cart.GetItemByIndex(index);
+        ScrollBox:ScrollToElementData(entry);
     else
         local entry = {
             Index = index,
             Quantity = 1
         };
         DataProvider:Insert(entry);
+        ScrollBox:ScrollToEnd();
     end
 end
 
@@ -306,16 +403,21 @@ function Cart.GenerateAsyncPurchaseOrder()
     return purchaseOrder;
 end
 
+local CartAsyncPurchaseTicker;
 function Cart.AsyncFinalizePurchase()
     PurchaseButton:Disable();
+    ClearCartButton:Disable();
 
     local purchaseOrder = Cart.GenerateAsyncPurchaseOrder();
+
+    local numItemsInCart = Cart.GetTotalNumberOfItemsInCart();
+    ShowPurchaseOverlay(numItemsInCart);
 
     local step = 1;
     local function Tick()
         local orders = purchaseOrder[step];
         if not orders then
-            print("Done purchasing!");
+            internal.Print("Done purchasing!");
             Cart.OnAsyncPurchaseComplete();
             return;
         end
@@ -325,19 +427,40 @@ function Cart.AsyncFinalizePurchase()
         end
 
         step = step + 1;
-        C_Timer.After(ASYNC_PURCHASE_STEP, Tick);
+        UpdateOverlayProgressBar(MAX_PURCHASE_ACTIONS_PER_SECOND * step);
     end
-
-    Tick();
+    CartAsyncPurchaseTicker = C_Timer.NewTicker(ASYNC_PURCHASE_STEP, Tick);
 end
 
 function Cart.OnAsyncPurchaseComplete()
     Cart.Flush();
+    Cart.StopAsyncPurchase();
+    HidePurchaseOverlay();
+end
+
+function Cart.StopAsyncPurchase()
+    CartAsyncPurchaseTicker:Cancel();
+    CartAsyncPurchaseTicker = nil;
 end
 
 function Cart.CanPlayerAffordPurchase()
     local totalCost = Cart.CalculateTotalCartPrice();
     return totalCost <= GetMoney();
+end
+
+function Cart.ShowClearCartPopup()
+    local numItemsInCart = Cart.GetTotalNumberOfItemsInCart();
+    StaticPopup_Show("SIMSCRAFT_CLEAR_CART_CONFIRM", numItemsInCart);
+end
+
+function Cart.ConfirmPurchase()
+    local totalCost = Cart.CalculateTotalCartPrice();
+    if totalCost > HIGH_COST_THRESHOLD then
+        local numItemsInCart = Cart.GetTotalNumberOfItemsInCart();
+        StaticPopup_Show("SIMSCRAFT_PURCHASE_CONFIRM", "uwu", numItemsInCart);
+    else
+        Cart.AsyncFinalizePurchase();
+    end
 end
 
 ------
@@ -375,6 +498,13 @@ local function OnMerchantShow()
     ShoppingCartFrame:Show();
     Cart.Flush();
     HookItemButtons();
+    HidePurchaseOverlay();
+end
+
+local function OnMerchantClosed()
+    Cart.StopAsyncPurchase();
+    Cart.Flush();
 end
 
 EventRegistry:RegisterFrameEventAndCallback("MERCHANT_SHOW", OnMerchantShow);
+EventRegistry:RegisterFrameEventAndCallback("MERCHANT_CLOSED", OnMerchantClosed);
