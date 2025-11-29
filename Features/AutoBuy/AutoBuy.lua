@@ -474,7 +474,7 @@ ScrollView:RegisterCallback("OnDataChanged", Cart.Refresh);
 local HookedButtons = {};
 local function HookItemButtons()
     for i=1, MERCHANT_ITEMS_PER_PAGE do
-        local button = _G["MerchantItem"..i.."ItemButton"];
+        local button = _G["MerchantItem".. i .."ItemButton"];
         if not HookedButtons[button] then
             HookedButtons[button] = true;
             button:HookScript("OnClick", function(self, mouseButton)
