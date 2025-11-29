@@ -71,9 +71,8 @@ function ShoppingCartEntryMixin:Init(data)
     self.ItemLabel:SetText(itemLink);
     self.QuantityEditBox:SetNumber(data.Quantity);
 
-    local itemCost = C_MerchantFrame.GetItemInfo(data.Index).price;
-    if itemCost then
-        local itemCostString = C_CurrencyInfo.GetCoinTextureString(itemCost);
+    local itemCostString = Cart.GenerateCostString(data);
+    if itemCostString ~= "" then
         self.ItemCost:SetText("x " .. itemCostString);
     else
         self.ItemCost:SetText("");
@@ -250,15 +249,14 @@ end
 
 function Cart.Refresh()
     local hasItemsInCart = DataProvider:GetSize() > 0;
-    local totalCartCost = Cart.CalculateTotalCartPrice();
     local canAfford = Cart.CanPlayerAffordPurchase();
 
     PurchaseButton:SetEnabled(hasItemsInCart and canAfford);
 
     local purchaseText;
     if hasItemsInCart then
-        local coinTextureString = WHITE_FONT_COLOR:WrapTextInColorCode(C_CurrencyInfo.GetCoinTextureString(totalCartCost));
-        purchaseText = PURCHASE_BUTTON_DEFAULT_TEXT .. " " .. coinTextureString;
+        local costString = Cart.GenerateCostString();
+        purchaseText = PURCHASE_BUTTON_DEFAULT_TEXT .. " " .. costString;
     else
         purchaseText = PURCHASE_BUTTON_DEFAULT_TEXT;
     end
@@ -319,19 +317,53 @@ function Cart.RemoveItemFromCartByIndex(index)
     end);
 end
 
-function Cart.GetGoldCostForItemEntry(itemEntry)
-    local info = C_MerchantFrame.GetItemInfo(itemEntry.Index);
-    return info.price * itemEntry.Quantity;
+function Cart.GetCostForItemEntry(itemEntry, stackCost)
+    local index = itemEntry.Index;
+    local info = C_MerchantFrame.GetItemInfo(index);
+    local fullGoldCost = info.price;
+    if stackCost then
+        fullGoldCost = info.price * itemEntry.Quantity;
+    end
+
+    local extendedCost = {};
+    if info.hasExtendedCost then
+        local numExtendedItems = GetMerchantItemCostInfo(index);
+        for i=1, numExtendedItems do
+            local itemTexture, itemValue, itemLink, currencyName = GetMerchantItemCostItem(index, i);
+            local fullAmount = itemValue;
+            if stackCost then
+                fullAmount = itemValue * itemEntry.Quantity;
+            end
+
+            extendedCost[itemTexture] = {
+                Amount = fullAmount,
+                ItemLink = itemLink,
+                CurrencyName = currencyName
+            };
+        end
+    end
+
+    return fullGoldCost, extendedCost;
 end
 
 function Cart.CalculateTotalCartPrice()
     local totalCost = 0;
+    local totalExtendedCost = {};
     DataProvider:ReverseForEach(function(itemEntry)
-        local itemCost = Cart.GetGoldCostForItemEntry(itemEntry);
+        local stackCost = true;
+        local itemCost, extendedCost = Cart.GetCostForItemEntry(itemEntry, stackCost);
         totalCost = totalCost + itemCost;
+        for texture, cost in pairs(extendedCost) do
+            if totalExtendedCost[texture] then
+                local newAmount = totalExtendedCost[texture].Amount + cost.Amount;
+                totalExtendedCost[texture].Amount = newAmount;
+            else
+                totalExtendedCost[texture] = cost;
+            end
+        end
     end);
 
-    return totalCost;
+    return totalCost, totalExtendedCost;
 end
 
 function Cart.GetTotalNumberOfItemsInCart()
@@ -450,16 +482,41 @@ function Cart.CanPlayerAffordPurchase()
     return totalCost <= GetMoney();
 end
 
+function Cart.GenerateCostString(itemEntry)
+    local goldCost, extendedCost;
+    if itemEntry then
+        goldCost, extendedCost = Cart.GetCostForItemEntry(itemEntry);
+    else
+        goldCost, extendedCost = Cart.CalculateTotalCartPrice();
+    end
+
+    local goldString = "";
+    if goldCost > 0 then
+        goldString = C_CurrencyInfo.GetCoinTextureString(goldCost);
+    end
+
+    local extendedCostString = "";
+    for texture, cost in pairs(extendedCost) do
+        local str = format("|T%d:0|t %d ", texture, cost.Amount);
+        extendedCostString = extendedCostString .. str;
+    end
+    extendedCostString = strtrim(extendedCostString);
+
+    return WHITE_FONT_COLOR:WrapTextInColorCode(goldString .. extendedCostString);
+end
+
 function Cart.ShowClearCartPopup()
     local numItemsInCart = Cart.GetTotalNumberOfItemsInCart();
     StaticPopup_Show("SIMSCRAFT_CLEAR_CART_CONFIRM", numItemsInCart);
 end
 
 function Cart.ConfirmPurchase()
-    local totalCost = Cart.CalculateTotalCartPrice();
-    if totalCost > HIGH_COST_THRESHOLD then
+    local totalCost, totalExtendedCost = Cart.CalculateTotalCartPrice();
+    local hasExtendedCost = next(totalExtendedCost) ~= nil;
+    if totalCost > HIGH_COST_THRESHOLD or hasExtendedCost then
         local numItemsInCart = Cart.GetTotalNumberOfItemsInCart();
-        StaticPopup_Show("SIMSCRAFT_PURCHASE_CONFIRM", "uwu", numItemsInCart);
+        local costString = Cart.GenerateCostString();
+        StaticPopup_Show("SIMSCRAFT_PURCHASE_CONFIRM", costString, numItemsInCart);
     else
         Cart.AsyncFinalizePurchase();
     end
@@ -484,6 +541,11 @@ local function HookItemButtons()
 
                 if IsShiftKeyDown() and mouseButton == "RightButton" then
                     local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
+                    local itemID = GetMerchantItemID(index);
+                    if not C_Item.IsDecorItem(itemID) then
+                        return;
+                    end
+
                     Cart.AddItemToCartByIndex(index);
                 end
             end);
@@ -491,9 +553,8 @@ local function HookItemButtons()
     end
 end
 
-local function OnMerchantShow()
-    if not IsAutoBuyEnabled() then
-        ShoppingCartFrame:Hide();
+local function ShowAutoBuy()
+    if ShoppingCartFrame:IsShown() then
         return;
     end
 
@@ -503,6 +564,27 @@ local function OnMerchantShow()
     HidePurchaseOverlay();
 end
 
+local function CheckDecorItemsAndShowFrame()
+    for i=1, GetMerchantNumItems() do
+        local itemID = GetMerchantItemID(i);
+        local item = Item:CreateFromItemID(itemID);
+        item:ContinueOnItemLoad(function()
+            if C_Item.IsDecorItem(itemID) then
+                ShowAutoBuy();
+            end
+        end);
+    end
+end
+
+local function OnMerchantShow()
+    if not IsAutoBuyEnabled() then
+        return;
+    end
+
+    ShoppingCartFrame:Hide();
+    CheckDecorItemsAndShowFrame();
+end
+
 local function OnMerchantClosed()
     Cart.StopAsyncPurchase();
     Cart.Flush();
@@ -510,3 +592,19 @@ end
 
 EventRegistry:RegisterFrameEventAndCallback("MERCHANT_SHOW", OnMerchantShow);
 EventRegistry:RegisterFrameEventAndCallback("MERCHANT_CLOSED", OnMerchantClosed);
+
+local function OnTooltipSetItem(tooltip)
+    if not C_PlayerInteractionManager.IsInteractingWithNpcOfType(Enum.PlayerInteractionType.Merchant) then
+        return;
+    end
+
+    if tooltip.GetItem then
+        local itemID = select(3, tooltip:GetItem());
+        if C_Item.IsDecorItem(itemID) then
+            local text = internal.ThemeColor:WrapTextInColorCode(WARDROBE_SHORTCUTS_TUTORIAL_2 .. " to add this item to your cart");
+            tooltip:AddLine(text);
+        end
+    end
+end
+
+TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, OnTooltipSetItem);
