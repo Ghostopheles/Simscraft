@@ -1,4 +1,3 @@
--- TODO: add some graphic or progress indicator when performing an async purchase
 -- TODO: add on OnTabPressed handler to the entries to enable tabbing down the list via the editboxes
 -- TODO: handle showing/hiding the shopping cart frame
 -- TODO: maybe enable hyperlinks on the item labels?
@@ -11,8 +10,8 @@ local addonName = ...;
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
-local ASYNC_PURCHASE_STEP = 1; -- in seconds
-local MAX_PURCHASE_ACTIONS_PER_SECOND = 5;
+local ASYNC_PURCHASE_STEP = 0.5; -- in seconds
+local MAX_PURCHASE_ACTIONS_PER_TICK = 5;
 local HIGH_COST_THRESHOLD = 25000000; -- 2,500 gold
 
 local function IsAutoBuyEnabled()
@@ -151,23 +150,13 @@ OverlayTexture:SetAllPoints();
 
 local OverlayProgressBar = CreateFrame("StatusBar", nil, PurchasingOverlay, "SimscraftPurchaseOverlayProgressBarTemplate");
 OverlayProgressBar:SetPoint("CENTER");
-OverlayProgressBar:SetScript("OnValueChanged", function(self)
-    local barEnd = self.BarEnd;
-    local barFill = self.BarFill;
-    if self:GetValue() > 0 then
-        barEnd:Show();
-        barEnd:SetPoint("LEFT", barFill, "LEFT", 0, 0);
-        barEnd:SetPoint("RIGHT", barFill, "RIGHT", 0, 0);
-    else
-        barEnd:Hide();
-        barEnd:ClearAllPoints();
-    end
-end);
 
 local function InitOverlayProgressBar(maxValue)
     local self = OverlayProgressBar;
     self:SetMinMaxSmoothedValue(0, maxValue);
     self:SetSmoothedValue(0);
+    self.ProgressText:SetTextToFit("");
+    self.PurchasingText:SetTextToFit("Purchasing");
 end
 
 local function UpdateOverlayProgressBar(current)
@@ -185,7 +174,7 @@ local function ShowPurchaseOverlay(numItemsInCart)
     InitOverlayProgressBar(numItemsInCart);
     OverlayTextTicker = C_Timer.NewTicker(1, function()
         local text = "Purchasing" .. strrep(".", OverlayTextStep);
-        OverlayProgressBar.ProgressText:SetTextToFit(text);
+        OverlayProgressBar.PurchasingText:SetTextToFit(text);
         OverlayTextStep = OverlayTextStep + 1;
         if OverlayTextStep > 3 then
             OverlayTextStep = 1;
@@ -202,9 +191,6 @@ local function HidePurchaseOverlay()
 
     PurchasingOverlay:Hide();
 end
-
-OverlayText = PurchasingOverlay:CreateFontString(nil, "OVERLAY", "GameFontWhite");
-OverlayText:SetPoint("BOTTOM", OverlayProgressBar, "TOP", 0, 5);
 
 ------
 
@@ -265,8 +251,14 @@ function Cart.Refresh()
     local canAfford = Cart.CanPlayerAffordPurchase();
 
     PurchaseButton:SetEnabled(hasItemsInCart and canAfford);
-    local coinTextureString = WHITE_FONT_COLOR:WrapTextInColorCode(C_CurrencyInfo.GetCoinTextureString(totalCartCost));
-    local purchaseText = PURCHASE_BUTTON_DEFAULT_TEXT .. " " .. coinTextureString;
+
+    local purchaseText;
+    if hasItemsInCart then
+        local coinTextureString = WHITE_FONT_COLOR:WrapTextInColorCode(C_CurrencyInfo.GetCoinTextureString(totalCartCost));
+        purchaseText = PURCHASE_BUTTON_DEFAULT_TEXT .. " " .. coinTextureString;
+    else
+        purchaseText = PURCHASE_BUTTON_DEFAULT_TEXT;
+    end
     PurchaseButton:SetText(purchaseText);
 
     ClearCartButton:SetEnabled(hasItemsInCart);
@@ -394,7 +386,7 @@ function Cart.GenerateAsyncPurchaseOrder()
     local tick = {};
     for i, action in ipairs(purchaseActions) do
         tinsert(tick, action);
-        if #tick == MAX_PURCHASE_ACTIONS_PER_SECOND or i == #purchaseActions then
+        if #tick == MAX_PURCHASE_ACTIONS_PER_TICK or i == #purchaseActions then
             tinsert(purchaseOrder, tick);
             tick = {};
         end
@@ -414,6 +406,7 @@ function Cart.AsyncFinalizePurchase()
     ShowPurchaseOverlay(numItemsInCart);
 
     local step = 1;
+    local itemsBought = 0;
     local function Tick()
         local orders = purchaseOrder[step];
         if not orders then
@@ -427,7 +420,8 @@ function Cart.AsyncFinalizePurchase()
         end
 
         step = step + 1;
-        UpdateOverlayProgressBar(MAX_PURCHASE_ACTIONS_PER_SECOND * step);
+        itemsBought = itemsBought + #orders;
+        UpdateOverlayProgressBar(itemsBought);
     end
     CartAsyncPurchaseTicker = C_Timer.NewTicker(ASYNC_PURCHASE_STEP, Tick);
 end
@@ -439,6 +433,9 @@ function Cart.OnAsyncPurchaseComplete()
 end
 
 function Cart.StopAsyncPurchase()
+    if not CartAsyncPurchaseTicker then
+        return;
+    end
     CartAsyncPurchaseTicker:Cancel();
     CartAsyncPurchaseTicker = nil;
 end

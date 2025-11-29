@@ -44,6 +44,6 @@ end);
 
 ---@param msg string
 function internal.Print(msg)
-    local prefix = "|cfffc037bSimscraft|h: ";
+    local prefix = "|cfffc037bSimscraft|r: ";
     print(prefix .. msg);
 end

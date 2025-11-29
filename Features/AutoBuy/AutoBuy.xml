@@ -66,6 +66,11 @@
                 <Texture parentKey="BarBackground" atlas="housing-dashboard-fillbar-bar-bg" setAllPoints="true"/>
             </Layer>
             <Layer level="OVERLAY">
+                <FontString parentKey="PurchasingText" justifyH="CENTER" justifyV="MIDDLE" inherits="GameFontWhite">
+                    <Anchors>
+                        <Anchor point="BOTTOM" relativePoint="TOP" y="5"/>
+                    </Anchors>
+                </FontString>
                 <FontString parentKey="ProgressText" justifyH="CENTER" justifyV="MIDDLE" inherits="GameFontWhite">
                     <Anchors>
                         <Anchor point="CENTER"/>
@@ -73,22 +78,6 @@
                 </FontString>
             </Layer>
         </Layers>
-        <Frames>
-            <Frame parentKey="BarEnd" useParentLevel="true" hidden="true">
-                <Size x="1" y="25"/>
-                <Layers>
-                    <Layer level="OVERLAY">
-                        <Texture parentKey="Overlay" atlas="housing-dashboard-fillbar-fill-threshold">
-                            <Size x="1" y="25"/>
-                            <Anchors>
-                                <Anchor point="LEFT"/>
-                                <Anchor point="RIGHT"/>
-                            </Anchors>
-                        </Texture>
-                    </Layer>
-                </Layers>
-            </Frame>
-        </Frames>
     </StatusBar>
 
     <Script file="AutoBuy.lua" />
