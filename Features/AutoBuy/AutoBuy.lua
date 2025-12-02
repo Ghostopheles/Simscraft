@@ -457,7 +457,7 @@ function Cart.AsyncFinalizePurchase()
     local function Tick()
         local orders = purchaseOrder[step];
         if not orders then
-            internal.Print("Done purchasing!");
+            internal.Print("Done purchasing! If the server is overloaded, it may have skipped some items.");
             Cart.OnAsyncPurchaseComplete();
             return;
         end
