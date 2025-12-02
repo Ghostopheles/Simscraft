@@ -1,9 +1,5 @@
 -- TODO: add on OnTabPressed handler to the entries to enable tabbing down the list via the editboxes
--- TODO: handle showing/hiding the shopping cart frame
 -- TODO: maybe enable hyperlinks on the item labels?
--- TODO: add support for item currencies
-
--- NOTE: you may run into issues shift-clicking on things if they support stack purchasing. too bad!
 
 local addonName = ...;
 
@@ -14,8 +10,6 @@ local ASYNC_PURCHASE_STEP = 0.5; -- in seconds
 local MAX_PURCHASE_ACTIONS_PER_TICK = 5;
 local HIGH_COST_THRESHOLD = 25000000; -- 2,500 gold
 local PURCHASE_COMPLETION_SOUNDKIT = SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE;
--- SOUNDKIT.UI_EVENT_SCHEDULER_CHIME
--- SOUNDKIT.TRADING_POST_UI_PURCHASE_CELEBRATION
 
 local function IsAutoBuyEnabled()
     return internal.Settings.GetSetting("EnableAutoBuy");
@@ -104,11 +98,21 @@ end
 
 ------------
 
+local UpdateCartToggleEnableState;
+
 local ShoppingCartFrame = CreateFrame("Frame", "SimscraftShoppingCartFrame", MerchantFrame, "PortraitFrameFlatTemplate");
 ButtonFrameTemplate_HidePortrait(ShoppingCartFrame);
 ShoppingCartFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 10, 0);
 ShoppingCartFrame:SetTitle(internal.ThemeColor:WrapTextInColorCode(addonName) .. " Shopping Cart");
 ShoppingCartFrame:SetSize(350, 400);
+ShoppingCartFrame:SetScript("OnShow", function()
+    UpdateCartToggleEnableState();
+    SimscraftConfig.CartShown = true;
+end);
+ShoppingCartFrame.CloseButton:HookScript("OnClick", function()
+    UpdateCartToggleEnableState();
+    SimscraftConfig.CartShown = false;
+end);
 
 local PURCHASE_BUTTON_DEFAULT_TEXT = PERKS_PROGRAM_CART_PURCHASE_TOOLTIP;
 
@@ -137,7 +141,7 @@ HelpText:SetPoint("CENTER", 0, 15);
 HelpText:SetJustifyH("CENTER");
 HelpText:SetJustifyV("MIDDLE");
 HelpText:SetTextColor(GRAY_FONT_COLOR:GetRGBA());
-HelpText:SetText("Your shopping cart is currently empty.");
+HelpText:SetText("Your shopping cart is currently empty.|n" .. WARDROBE_SHORTCUTS_TUTORIAL_2 .. " to add an item to your cart.");
 
 ------
 
@@ -238,6 +242,13 @@ ScrollView:SetDataProvider(DataProvider);
 
 ------
 
+local ErrorText = ShoppingCartFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite");
+ErrorText:SetPoint("TOP", ScrollBox, "BOTTOM", 0, 7);
+ErrorText:SetText(RED_FONT_COLOR:WrapTextInColorCode(ERR_NOT_ENOUGH_MONEY));
+ErrorText:Hide();
+
+------
+
 ---@class ShoppingCartEntry
 ---@field MerchantIndex number
 ---@field Quantity number
@@ -252,6 +263,7 @@ function Cart.Refresh()
     local canAfford = Cart.CanPlayerAffordPurchase();
 
     PurchaseButton:SetEnabled(hasItemsInCart and canAfford);
+    ErrorText:SetShown(not canAfford);
 
     local purchaseText;
     if hasItemsInCart then
@@ -546,6 +558,7 @@ local function HookItemButtons()
                         return;
                     end
 
+                    ShoppingCartFrame:Show();
                     Cart.AddItemToCartByIndex(index);
                 end
             end);
@@ -558,7 +571,7 @@ local function ShowAutoBuy()
         return;
     end
 
-    ShoppingCartFrame:Show();
+    ShoppingCartFrame:SetShown(SimscraftConfig.CartShown);
     Cart.Flush();
     HookItemButtons();
     HidePurchaseOverlay();
@@ -608,3 +621,24 @@ local function OnTooltipSetItem(tooltip)
 end
 
 TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, OnTooltipSetItem);
+
+------------
+
+local CartToggle = CreateFrame("Button", nil, MerchantFrameCloseButton, "SimscraftToggleCartButtonTemplate");
+CartToggle:SetPoint("TOPRIGHT", MerchantFrameCloseButton, "TOPLEFT", -1, 0);
+
+function UpdateCartToggleEnableState()
+    local enabled = not ShoppingCartFrame:IsShown();
+    CartToggle:SetEnabled(enabled);
+
+    if enabled then
+        CartToggle.tooltipText = "Show the Simscraft Shopping Cart";
+    else
+        CartToggle.tooltipText = nil;
+    end
+end
+
+CartToggle:SetScript("OnClick", function(self)
+    ShoppingCartFrame:SetShown(not ShoppingCartFrame:IsShown());
+    UpdateCartToggleEnableState();
+end);

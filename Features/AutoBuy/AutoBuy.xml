@@ -8,6 +8,13 @@
         </KeyValues>
     </Button>
 
+    <Button name="SimscraftToggleCartButtonTemplate" inherits="UIButtonTemplate" virtual="true">
+        <Size x="24" y="24"/>
+        <KeyValues>
+            <KeyValue key="buttonArtKit" value="128-RedButton-ShoppingCart" type="string" />
+        </KeyValues>
+    </Button>
+
     <Frame name="SimscraftShoppingCartEntryTemplate" mixin="ShoppingCartEntryMixin" virtual="true">
         <Size y="25" />
         <Frames>
