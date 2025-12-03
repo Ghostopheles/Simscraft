@@ -8,7 +8,8 @@ local Setting = {
     PlayHouseEditorMusic = "PlayHouseEditorMusic",
     EnableAltGridSnapToggle = "EnableAltGridSnapToggle",
     EnableAutoBuy = "EnableAutoBuy",
-    EnableDecorItemCounts = "EnableDecorItemCounts"
+    EnableDecorItemCounts = "EnableDecorItemCounts",
+    EnableDecorNewItemIcon = "EnableDecorNewItemIcon",
 };
 internal.Setting = Setting;
 
@@ -16,7 +17,8 @@ local defaultConfig = {
     [internal.Setting.PlayHouseEditorMusic] = false,
     [internal.Setting.EnableAltGridSnapToggle] = false,
     [internal.Setting.EnableAutoBuy] = true,
-    [internal.Setting.EnableDecorItemCounts] = true
+    [internal.Setting.EnableDecorItemCounts] = true,
+    [internal.Setting.EnableDecorNewItemIcon] = true,
 };
 
 if not SimscraftConfig then
@@ -62,6 +64,15 @@ do
     local variable = internal.Setting.EnableDecorItemCounts;
     local name = "Enable Vendor Decor Item Counts";
     local tooltip = "Displays a number showing the amount of each decor item you currently have in storage, in the vendor frame.";
+
+    local setting = Settings.CreateSetting(category, variable, name, defaultConfig[variable]);
+    Settings.CreateCheckbox(category, setting, tooltip);
+end
+
+do
+    local variable = internal.Setting.EnableDecorNewItemIcon;
+    local name = "Enable Vendor New Decor Icon";
+    local tooltip = "Shows an icon when the first acquisition bonus is available for a decor item.";
 
     local setting = Settings.CreateSetting(category, variable, name, defaultConfig[variable]);
     Settings.CreateCheckbox(category, setting, tooltip);

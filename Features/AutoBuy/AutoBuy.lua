@@ -20,6 +20,10 @@ local function IsItemCountsEnabled()
     return internal.Settings.GetSetting("EnableDecorItemCounts");
 end
 
+local function IsNewItemIconEnabled()
+    return internal.Settings.GetSetting("EnableDecorNewItemIcon");
+end
+
 ------------
 
 local Cart = {};
@@ -719,7 +723,7 @@ local ItemCountTextColors = {
     OKAY = WHITE_FONT_COLOR;
 };
 
-local ItemCountFormat = "Owned: %s";
+local ItemCountFormat = CreateAtlasMarkup("house-chest-icon", 16, 16) .. " %s";
 
 local ItemCountWidgets = {};
 local function CreateItemCountWidget(parent)
@@ -746,7 +750,8 @@ local function UpdateItemCountWidgetForItemID(widget, itemID, nonPagedIndex)
     widget:SetTextToFit(text);
 
     local icon = NewItemIcons[nonPagedIndex];
-    icon:SetShown((firstAcquisitionBonus and firstAcquisitionBonus > 0) or false);
+    local showIcon = (firstAcquisitionBonus and firstAcquisitionBonus > 0 and IsNewItemIconEnabled()) or false;
+    icon:SetShown(showIcon);
 end
 
 --- creating our widgets
@@ -795,5 +800,6 @@ end
 
 hooksecurefunc("MerchantFrame_Update", OnMerchantFrameUpdate);
 EventRegistry:RegisterFrameEventAndCallback("NEW_HOUSING_ITEM_ACQUIRED", OnMerchantFrameUpdate);
+EventRegistry:RegisterFrameEventAndCallback("ZONE_CHANGED_NEW_AREA", RefreshSearcher);
 EventRegistry:RegisterFrameEventAndCallback("HOUSING_CATALOG_SEARCHER_RELEASED", RefreshSearcher);
 EventUtil.RegisterOnceFrameEventAndCallback("MERCHANT_SHOW", SetupNewItemIcons);
