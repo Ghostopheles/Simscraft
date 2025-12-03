@@ -738,6 +738,10 @@ end
 
 local function UpdateItemCountWidgetForItemID(widget, itemID, nonPagedIndex)
     local numStored, firstAcquisitionBonus = GetDecorNumOwnedFromItemID(itemID);
+    if not numStored then
+        return;
+    end
+
     local color;
     if numStored == 0 or not numStored then
         color = ItemCountTextColors.NONE;
