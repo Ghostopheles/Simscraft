@@ -642,3 +642,18 @@ CartToggle:SetScript("OnClick", function(self)
     ShoppingCartFrame:SetShown(not ShoppingCartFrame:IsShown());
     UpdateCartToggleEnableState();
 end);
+
+------------
+
+local function UpdateModelPreviewFrameAnchors()
+    if ShoppingCartFrame:IsShown() then
+        HousingModelPreviewFrame:SetPoint("TOPLEFT", ShoppingCartFrame, "TOPRIGHT", 10, 0);
+    end
+end
+
+-- hook item preview window so it doesn't cover up our cart
+EventUtil.ContinueOnAddOnLoaded("Blizzard_HousingModelPreview", function()
+    HousingModelPreviewFrame:HookScript("OnShow", function(self)
+        UpdateModelPreviewFrameAnchors();
+    end);
+end);
