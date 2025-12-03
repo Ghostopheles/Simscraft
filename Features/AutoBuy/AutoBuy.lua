@@ -562,7 +562,7 @@ local function HookItemButtons()
                     return;
                 end
 
-                if IsShiftKeyDown() and mouseButton == "RightButton" then
+                if internal.Settings.IsAddToCartModifierDown() and mouseButton == "RightButton" then
                     local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
                     local itemID = GetMerchantItemID(index);
                     if not C_Item.IsDecorItem(itemID) then

@@ -1,7 +1,8 @@
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
-local Settings = internal.Settings;
+---@class SimscraftSettings
+local S = internal.Settings;
 
 ---@class SimscraftSettingNames
 local Setting = {
@@ -10,6 +11,7 @@ local Setting = {
     EnableAutoBuy = "EnableAutoBuy",
     EnableDecorItemCounts = "EnableDecorItemCounts",
     EnableDecorNewItemIcon = "EnableDecorNewItemIcon",
+    AddToCartModifier = "AddToCartModifier",
 };
 internal.Setting = Setting;
 
@@ -19,6 +21,7 @@ local defaultConfig = {
     [internal.Setting.EnableAutoBuy] = true,
     [internal.Setting.EnableDecorItemCounts] = true,
     [internal.Setting.EnableDecorNewItemIcon] = true,
+    [internal.Setting.AddToCartModifier] = "SHIFT"
 };
 
 if not SimscraftConfig then
@@ -31,15 +34,15 @@ end
 
 ------------
 
-local category = Settings.GetCategory();
+local category = S.GetCategory();
 
 do
     local variable = internal.Setting.PlayHouseEditorMusic;
     local name = "Play Music while in House Editor";
     local tooltip = "Toggles music playback while in the House Editor.";
 
-    local setting = Settings.CreateSetting(category, variable, name, defaultConfig[variable]);
-    Settings.CreateCheckbox(category, setting, tooltip);
+    local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
+    S.CreateCheckbox(category, setting, tooltip);
 end
 
 do
@@ -47,8 +50,8 @@ do
     local name = "Enable " .. ALT_KEY .. " grid snap toggle";
     local tooltip = "Disables grid snapping while the " .. ALT_KEY .. " is held.";
 
-    local setting = Settings.CreateSetting(category, variable, name, defaultConfig[variable]);
-    Settings.CreateCheckbox(category, setting, tooltip);
+    local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
+    S.CreateCheckbox(category, setting, tooltip);
 end
 
 do
@@ -56,8 +59,8 @@ do
     local name = "Enable Decor Shopping Cart";
     local tooltip = "Toggles the vendor decor shopping cart feature.";
 
-    local setting = Settings.CreateSetting(category, variable, name, defaultConfig[variable]);
-    Settings.CreateCheckbox(category, setting, tooltip);
+    local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
+    S.CreateCheckbox(category, setting, tooltip);
 end
 
 do
@@ -65,8 +68,8 @@ do
     local name = "Enable Vendor Decor Item Counts";
     local tooltip = "Displays a number showing the amount of each decor item you currently have in storage, in the vendor frame.";
 
-    local setting = Settings.CreateSetting(category, variable, name, defaultConfig[variable]);
-    Settings.CreateCheckbox(category, setting, tooltip);
+    local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
+    S.CreateCheckbox(category, setting, tooltip);
 end
 
 do
@@ -74,6 +77,33 @@ do
     local name = "Enable Vendor New Decor Icon";
     local tooltip = "Shows an icon when the first acquisition bonus is available for a decor item.";
 
-    local setting = Settings.CreateSetting(category, variable, name, defaultConfig[variable]);
-    Settings.CreateCheckbox(category, setting, tooltip);
+    local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
+    S.CreateCheckbox(category, setting, tooltip);
+end
+
+do
+    local variable = internal.Setting.AddToCartModifier;
+    local name = "Add to Cart Modifier";
+    local tooltip = "The modifier that must be held down when right-clicking an item to add it to the cart.";
+
+    local optionTooltips = {
+        [1] = "Add an item to the cart using an Alt Right-click",
+        [2] = "Add an item to the cart using an Ctrl Right-click",
+        [3] = "Add an item to the cart using an Shift Right-click",
+    };
+
+    local options = Settings.CreateModifiedClickOptions(optionTooltips, true); -- using Blizzard Settings here
+    local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
+    S.CreateDropdown(category, setting, options, tooltip);
+end
+
+function S.IsAddToCartModifierDown()
+    local key = S.GetSetting(internal.Setting.AddToCartModifier);
+    if key == "ALT" then
+        return IsAltKeyDown();
+    elseif key == "CTRL" then
+        return IsControlKeyDown();
+    elseif key == "SHIFT" then
+        return IsShiftKeyDown();
+    end
 end
