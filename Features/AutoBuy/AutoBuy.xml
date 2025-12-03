@@ -1,6 +1,10 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 
+    <Include file="Events.lua"/>
+    <Include file="CartEntry.lua"/>
+    <Include file="Cart.lua"/>
+
     <Button name="SimscraftClearCartButtonTemplate" inherits="UIButtonTemplate" virtual="true">
         <Size x="40" y="40"/>
         <KeyValues>
@@ -87,6 +91,6 @@
         </Layers>
     </StatusBar>
 
-    <Script file="AutoBuy.lua" />
-
+    <Include file="CartFrame.lua"/>
+    <Include file="AutoBuy.lua" />
 </Ui>

@@ -1,0 +1,248 @@
+local addonName = ...;
+
+---@class SimscraftInternal
+local internal = select(2, ...);
+
+---@class SimscraftAutoBuy
+local AutoBuy = internal.AutoBuy;
+
+local Events = AutoBuy.Events;
+local Registry = AutoBuy.Registry;
+local Cart = AutoBuy.Cart;
+
+------------
+
+local ShoppingCartFrame = CreateFrame("Frame", "SimscraftShoppingCartFrame", MerchantFrame, "PortraitFrameFlatTemplate");
+ButtonFrameTemplate_HidePortrait(ShoppingCartFrame);
+ShoppingCartFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 10, 0);
+ShoppingCartFrame:SetTitle(internal.ThemeColor:WrapTextInColorCode(addonName) .. " Shopping Cart");
+ShoppingCartFrame:SetSize(350, 400);
+ShoppingCartFrame:SetScript("OnShow", function()
+    Registry:TriggerEvent(Events.CART_FRAME_SHOW);
+end);
+ShoppingCartFrame:SetScript("OnHide", function()
+    Registry:TriggerEvent(Events.CART_FRAME_HIDE);
+end);
+ShoppingCartFrame.CloseButton:HookScript("OnClick", function()
+    Registry:TriggerEvent(Events.CART_FRAME_CLOSE_BUTTON_CLICKED);
+end);
+
+------------
+
+local PURCHASE_BUTTON_DEFAULT_TEXT = PERKS_PROGRAM_CART_PURCHASE_TOOLTIP;
+
+local PurchaseButton = CreateFrame("Button", nil, ShoppingCartFrame, "SharedGoldRedButtonLargeTemplate");
+PurchaseButton:SetPoint("BOTTOMRIGHT", -18, 8);
+PurchaseButton:SetHeight(40);
+PurchaseButton:SetText(PURCHASE_BUTTON_DEFAULT_TEXT);
+PurchaseButton:SetScript("OnClick", function()
+    Cart.ConfirmPurchase();
+end);
+PurchaseButton:Disable();
+
+------------
+
+local ClearCartButton = CreateFrame("Button", nil, ShoppingCartFrame, "SimscraftClearCartButtonTemplate");
+ClearCartButton:SetPoint("BOTTOMLEFT", 18, 8);
+ClearCartButton:SetScript("OnClick", function()
+    Cart.ShowClearCartPopup();
+end);
+ClearCartButton.tooltipText = PERKS_PROGRAM_CART_CLEAR_TOOLTIP;
+
+PurchaseButton:SetPoint("LEFT", ClearCartButton, "RIGHT", 10, 0);
+
+local HelpText = ShoppingCartFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite");
+HelpText:SetPoint("CENTER", 0, 15);
+HelpText:SetJustifyH("CENTER");
+HelpText:SetJustifyV("MIDDLE");
+HelpText:SetTextColor(GRAY_FONT_COLOR:GetRGBA());
+HelpText:SetText("Your shopping cart is currently empty.|n" .. WARDROBE_SHORTCUTS_TUTORIAL_2 .. " to add an item to your cart.");
+
+------
+
+local PurchasingOverlay = CreateFrame("Frame", nil, ShoppingCartFrame);
+PurchasingOverlay:SetPoint("TOPLEFT", 5, -15);
+PurchasingOverlay:SetPoint("BOTTOMRIGHT", 0, 4);
+PurchasingOverlay:Hide();
+
+local OverlayTexture = PurchasingOverlay:CreateTexture(nil, "OVERLAY");
+OverlayTexture:SetColorTexture(0, 0, 0, 0.75);
+OverlayTexture:SetAllPoints();
+
+local OverlayProgressBar = CreateFrame("StatusBar", nil, PurchasingOverlay, "SimscraftPurchaseOverlayProgressBarTemplate");
+OverlayProgressBar:SetPoint("CENTER");
+
+local function InitOverlayProgressBar(self, maxValue)
+    self:SetMinMaxSmoothedValue(0, maxValue);
+    self:SetValue(0);
+    self.ProgressText:SetTextToFit("");
+    self.PurchasingText:SetTextToFit("Purchasing");
+end
+
+local function UpdateOverlayProgressBar(self, current)
+    self:SetSmoothedValue(current);
+    local _, max = self:GetMinMaxValues()
+    local progress = format("%d/%d", current, max);
+    self.ProgressText:SetTextToFit(progress);
+end
+Registry:RegisterCallback(Events.CART_TICK_PURCHASE, UpdateOverlayProgressBar, OverlayProgressBar);
+
+local OverlayTextTicker;
+local OverlayTextStep = 1;
+local function ShowPurchaseOverlay(numItemsInCart)
+    PurchasingOverlay:Show();
+    InitOverlayProgressBar(numItemsInCart);
+    OverlayTextTicker = C_Timer.NewTicker(1, function()
+        local text = "Purchasing" .. strrep(".", OverlayTextStep);
+        OverlayProgressBar.PurchasingText:SetTextToFit(text);
+        OverlayTextStep = OverlayTextStep + 1;
+        if OverlayTextStep > 3 then
+            OverlayTextStep = 1;
+        end
+    end);
+end
+Registry:RegisterCallback(Events.CART_BEGIN_PURCHASE, ShowPurchaseOverlay, OverlayProgressBar);
+
+local function HidePurchaseOverlay(self)
+    if OverlayTextTicker then
+        OverlayTextTicker:Cancel();
+        OverlayTextTicker = nil;
+        OverlayTextStep = 1;
+    end
+
+    self:Hide();
+end
+Registry:RegisterCallback(Events.CART_END_PURCHASE, HidePurchaseOverlay, PurchasingOverlay);
+Registry:RegisterCallback(Events.CART_REFRESH, HidePurchaseOverlay, PurchasingOverlay);
+
+------
+
+local ScrollBox = CreateFrame("Frame", nil, ShoppingCartFrame, "WowScrollBoxList");
+ScrollBox:SetParentKey("ScrollBox");
+
+local ScrollBar = CreateFrame("EventFrame", nil, ShoppingCartFrame, "MinimalScrollBar");
+ScrollBar:SetPoint("TOPRIGHT", -5, -30);
+ScrollBar:SetPoint("BOTTOMRIGHT", -5, 5);
+ScrollBar:SetParentKey("ScrollBar");
+
+local anchorsWithScrollBar = {
+    CreateAnchor("TOPLEFT", ShoppingCartFrame, "TOPLEFT", 5, -30),
+    CreateAnchor("TOPRIGHT", ScrollBar, "TOPLEFT", -5, 0),
+    CreateAnchor("BOTTOM", PurchaseButton, "TOP", 0, 5),
+};
+
+local anchorsWithoutScrollBar = {
+    anchorsWithScrollBar[1],
+    CreateAnchor("TOPRIGHT", ShoppingCartFrame, "TOPRIGHT", -5, -30),
+    anchorsWithScrollBar[3],
+};
+
+ScrollUtil.AddManagedScrollBarVisibilityBehavior(ScrollBox, ScrollBar, anchorsWithScrollBar, anchorsWithoutScrollBar);
+
+------
+
+local topPadding = 3;
+local bottomPadding = 3;
+local leftPadding = 3;
+local rightPadding = 3;
+local spacing = 5;
+
+local ScrollView = CreateScrollBoxListLinearView(topPadding, bottomPadding, leftPadding, rightPadding, spacing);
+ScrollUtil.InitScrollBoxListWithScrollBar(ScrollBox, ScrollBar, ScrollView);
+
+local function InitializeCartEntry(frame, itemLink)
+    frame:Init(itemLink);
+end
+
+ScrollView:SetElementInitializer("SimscraftShoppingCartEntryTemplate", InitializeCartEntry);
+
+local DataProvider = CreateDataProvider();
+ScrollView:SetDataProvider(DataProvider);
+
+------------
+
+local ErrorText = ShoppingCartFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite");
+ErrorText:SetPoint("TOP", ScrollBox, "BOTTOM", 0, 7);
+ErrorText:SetText(RED_FONT_COLOR:WrapTextInColorCode(ERR_NOT_ENOUGH_MONEY));
+ErrorText:Hide();
+
+------------
+
+ScrollView:RegisterCallback("OnDataChanged", function()
+    Registry:TriggerEvent(Events.CART_REFRESH);
+end);
+
+---@class SimscraftAutoBuyUI
+local UI = {};
+
+
+------------
+
+local CartToggle = CreateFrame("Button", nil, MerchantFrameCloseButton, "SimscraftToggleCartButtonTemplate");
+CartToggle:SetPoint("TOPRIGHT", MerchantFrameCloseButton, "TOPLEFT", -1, 0);
+
+local function UpdateCartToggleEnableState()
+    local enabled = not ShoppingCartFrame:IsShown();
+    CartToggle:SetEnabled(enabled);
+
+    if enabled then
+        CartToggle.tooltipText = "Show the Simscraft Shopping Cart";
+    else
+        CartToggle.tooltipText = nil;
+    end
+end
+Registry:RegisterCallback(Events.CART_FRAME_VISIBILITY_CHANGED, UpdateCartToggleEnableState);
+
+CartToggle:SetScript("OnClick", function()
+    local isShown = ShoppingCartFrame:IsShown();
+    if isShown then
+        Registry:TriggerEvent(Events.CART_FRAME_CLOSE_BUTTON_CLICKED);
+    end
+
+    ShoppingCartFrame:SetShown(not isShown);
+end);
+
+------------
+--- config
+
+local function OnShoppingCartShow()
+    SimscraftConfig.CartShown = true;
+end
+Registry:RegisterCallback(Events.CART_FRAME_SHOW, OnShoppingCartShow);
+
+local function OnShoppingCartCloseButtonClicked()
+    SimscraftConfig.CartShown = false;
+end
+Registry:RegisterCallback(Events.CART_FRAME_CLOSE_BUTTON_CLICKED, OnShoppingCartCloseButtonClicked);
+
+------------
+--- UI updating!
+
+local function RefreshButtonsAndTexts()
+    local hasItemsInCart = DataProvider:GetSize() > 0;
+    local canAfford = Cart.CanPlayerAffordPurchase();
+
+    PurchaseButton:SetEnabled(hasItemsInCart and canAfford);
+    ErrorText:SetShown(hasItemsInCart and not canAfford);
+
+    local purchaseText;
+    if hasItemsInCart then
+        local costString = Cart.GenerateCostString();
+        purchaseText = PURCHASE_BUTTON_DEFAULT_TEXT .. " " .. costString;
+    else
+        purchaseText = PURCHASE_BUTTON_DEFAULT_TEXT;
+    end
+    PurchaseButton:SetText(purchaseText);
+
+    ClearCartButton:SetEnabled(hasItemsInCart);
+
+    HelpText:SetShown(not hasItemsInCart);
+    ScrollView:ReinitializeFrames();
+end
+Registry:RegisterCallback(Events.CART_REFRESH, RefreshButtonsAndTexts);
+
+local function OnBeginPurchase()
+    PurchaseButton:Disable();
+    ClearCartButton:Disable();
+end
+Registry:RegisterCallback(Events.CART_BEGIN_PURCHASE, OnBeginPurchase);
