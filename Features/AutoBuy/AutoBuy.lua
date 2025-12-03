@@ -736,7 +736,7 @@ local function CreateItemCountWidget(parent)
     return str;
 end
 
-local function UpdateItemCountWidgetForItemID(widget, itemID, nonPagedIndex)
+local function UpdateItemWidgetsForItemID(widget, itemID, nonPagedIndex)
     local numStored, firstAcquisitionBonus = GetDecorNumOwnedFromItemID(itemID);
     if not numStored then
         return;
@@ -753,6 +753,7 @@ local function UpdateItemCountWidgetForItemID(widget, itemID, nonPagedIndex)
 
     local text = format(ItemCountFormat, color:WrapTextInColorCode(numStored));
     widget:SetTextToFit(text);
+    widget:SetShown(IsItemCountsEnabled());
 
     local icon = NewItemIcons[nonPagedIndex];
     local showIcon = (firstAcquisitionBonus and firstAcquisitionBonus > 0 and IsNewItemIconEnabled()) or false;
@@ -776,10 +777,6 @@ local function CreateAllItemCountWidgets()
 end
 
 local function OnMerchantFrameUpdate()
-    if not IsItemCountsEnabled() then
-        return;
-    end
-
     if not widgetsCreated then
         CreateAllItemCountWidgets();
     end
@@ -787,14 +784,12 @@ local function OnMerchantFrameUpdate()
     for i, widget in ipairs(ItemCountWidgets) do
         local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
         local itemID = GetMerchantItemID(index);
+        widget:Hide();
         if itemID then
             local isDecorItem = itemID and C_Item.IsDecorItem(itemID);
             if isDecorItem then
-                C_Timer.After(CACHE_WAIT_TIME, function() UpdateItemCountWidgetForItemID(widget, itemID, i); end);
+                C_Timer.After(CACHE_WAIT_TIME, function() UpdateItemWidgetsForItemID(widget, itemID, i); end);
             end
-            widget:SetShown(isDecorItem);
-        else
-            widget:Hide();
         end
     end
 end
