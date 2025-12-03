@@ -684,7 +684,7 @@ end);
 
 --- need to create a catalog searcher to refresh the 'number of owned decor items' cache (???)
 --- also need to refresh it on the HOUSING_CATALOG_SEARCHER_RELEASED event
-local searcher = C_HousingCatalog.CreateCatalogSearcher();
+C_HousingCatalog.CreateCatalogSearcher();
 
 local CACHE_WAIT_TIME = 0.1;
 
@@ -805,11 +805,12 @@ local function OnMerchantFrameUpdate()
 end
 
 local function RefreshSearcher()
-    searcher = C_HousingCatalog.CreateCatalogSearcher();
+    C_HousingCatalog.CreateCatalogSearcher();
 end
 
 hooksecurefunc("MerchantFrame_Update", OnMerchantFrameUpdate);
 EventRegistry:RegisterFrameEventAndCallback("NEW_HOUSING_ITEM_ACQUIRED", OnMerchantFrameUpdate);
+EventRegistry:RegisterFrameEventAndCallback("ZONE_CHANGED", RefreshSearcher);
 EventRegistry:RegisterFrameEventAndCallback("ZONE_CHANGED_NEW_AREA", RefreshSearcher);
 EventRegistry:RegisterFrameEventAndCallback("HOUSING_CATALOG_SEARCHER_RELEASED", RefreshSearcher);
 EventUtil.RegisterOnceFrameEventAndCallback("MERCHANT_SHOW", SetupNewItemIcons);
