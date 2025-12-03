@@ -2,7 +2,7 @@
 A housing quality-of-life addon.
 
 ## AutoBuy
-Simscraft features a (state-of-the-art) shopping cart, usable at any vendor that sells decor. Simply shift-click on the item you want to add to the cart, and voila. You can change the amount you want to buy in the editbox, or by shift-clicking the item repeatedly.
+Simscraft features a (state-of-the-art) shopping cart, usable at any vendor that sells decor. Simply shift right-click on the item you want to add to the cart, and voila. You can change the amount you want to buy in the editbox, or by shift right-clicking the item repeatedly.
 
 Once you're happy with your cart, click purchase. For the server's sake, the rate at which you can buy items is quite low, so it might take a while. But it's better than doing it manually!
 
