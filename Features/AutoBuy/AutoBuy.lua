@@ -1,4 +1,5 @@
 -- TODO: add on OnTabPressed handler to the entries to enable tabbing down the list via the editboxes
+-- TODO: add an OnEscapePressed handler to the cart items edit box
 -- TODO: maybe enable hyperlinks on the item labels?
 
 local addonName = ...;
