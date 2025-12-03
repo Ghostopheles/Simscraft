@@ -10,9 +10,14 @@ local ASYNC_PURCHASE_STEP = 0.75; -- in seconds
 local MAX_PURCHASE_ACTIONS_PER_TICK = 5;
 local HIGH_COST_THRESHOLD = 25000000; -- 2,500 gold
 local PURCHASE_COMPLETION_SOUNDKIT = SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE;
+local ITEM_COUNT_LOW_LIMIT = 5;
 
 local function IsAutoBuyEnabled()
     return internal.Settings.GetSetting("EnableAutoBuy");
+end
+
+local function IsItemCountsEnabled()
+    return internal.Settings.GetSetting("EnableDecorItemCounts");
 end
 
 ------------
@@ -615,7 +620,7 @@ local function OnTooltipSetItem(tooltip)
 
     if tooltip.GetItem then
         local itemID = select(3, tooltip:GetItem());
-        if C_Item.IsDecorItem(itemID) then
+        if itemID and C_Item.IsDecorItem(itemID) then
             local text = internal.ThemeColor:WrapTextInColorCode(WARDROBE_SHORTCUTS_TUTORIAL_2 .. " to add this item to your cart");
             tooltip:AddLine(text);
         end
@@ -668,3 +673,99 @@ EventUtil.ContinueOnAddOnLoaded("Blizzard_HousingModelPreview", function()
         UpdateModelPreviewFrameAnchors();
     end);
 end);
+
+------------
+--- number owned doohickey
+
+--- need to create a catalog searcher to refresh the 'number of owned decor items' cache (???)
+--- also need to refresh it on the HOUSING_CATALOG_SEARCHER_RELEASED event
+local searcher = C_HousingCatalog.CreateCatalogSearcher();
+
+local CACHE_WAIT_TIME = 0.1;
+
+local function GetDecorNumOwnedFromItemID(itemID)
+    local tryGetOwnedInfo = true;
+    local catalogEntryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(itemID, tryGetOwnedInfo);
+    return catalogEntryInfo.numStored, catalogEntryInfo.firstAcquisitionBonus;
+end
+
+local ItemCountTextColors = {
+    NONE = RED_FONT_COLOR;
+    LOW = YELLOW_FONT_COLOR;
+    OKAY = WHITE_FONT_COLOR;
+};
+
+local ItemCountFormat = "Owned: %s";
+
+local ItemCountWidgets = {};
+local function CreateItemCountWidget(parent)
+    local str = parent:CreateFontString(nil, "ARTWORK", "GameFontWhite");
+    str:SetJustifyH("RIGHT");
+    str:SetJustifyV("MIDDLE");
+
+    tinsert(ItemCountWidgets, str);
+    return str;
+end
+
+local function UpdateItemCountWidgetForItemID(widget, itemID)
+    local numStored = GetDecorNumOwnedFromItemID(itemID);
+    local color;
+    if numStored == 0 then
+        color = ItemCountTextColors.NONE;
+    elseif numStored < ITEM_COUNT_LOW_LIMIT then
+        color = ItemCountTextColors.LOW;
+    else
+        color = ItemCountTextColors.OKAY;
+    end
+
+    local text = format(ItemCountFormat, color:WrapTextInColorCode(numStored));
+    widget:SetTextToFit(text);
+end
+
+--- creating our widgets
+
+local widgetsCreated = false;
+local function CreateAllItemCountWidgets()
+    if widgetsCreated then
+        return;
+    end
+
+    for i=1, MERCHANT_ITEMS_PER_PAGE do
+        local itemFrame = _G["MerchantItem"..i];
+        local countString = CreateItemCountWidget(itemFrame);
+        countString:SetPoint("BOTTOMRIGHT");
+    end
+    widgetsCreated = true;
+end
+
+local function OnMerchantFrameUpdate()
+    if not IsItemCountsEnabled() then
+        return;
+    end
+
+    if not widgetsCreated then
+        CreateAllItemCountWidgets();
+    end
+
+    for i, widget in ipairs(ItemCountWidgets) do
+        local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
+        local itemID = GetMerchantItemID(index);
+        if itemID then
+            local isDecorItem = itemID and C_Item.IsDecorItem(itemID);
+            if isDecorItem then
+                C_Timer.After(CACHE_WAIT_TIME, function() UpdateItemCountWidgetForItemID(widget, itemID); end);
+            end
+            widget:SetShown(isDecorItem);
+        else
+            widget:Hide();
+        end
+    end
+end
+
+local function RefreshSearcher()
+    searcher = C_HousingCatalog.CreateCatalogSearcher();
+end
+
+hooksecurefunc("MerchantFrame_Update", OnMerchantFrameUpdate);
+EventRegistry:RegisterFrameEventAndCallback("NEW_HOUSING_ITEM_ACQUIRED", OnMerchantFrameUpdate);
+EventRegistry:RegisterFrameEventAndCallback("HOUSING_CATALOG_SEARCHER_RELEASED", RefreshSearcher);

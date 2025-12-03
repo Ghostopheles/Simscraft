@@ -7,14 +7,16 @@ local Settings = internal.Settings;
 local Setting = {
     PlayHouseEditorMusic = "PlayHouseEditorMusic",
     EnableAltGridSnapToggle = "EnableAltGridSnapToggle",
-    EnableAutoBuy = "EnableAutoBuy"
+    EnableAutoBuy = "EnableAutoBuy",
+    EnableDecorItemCounts = "EnableDecorItemCounts"
 };
 internal.Setting = Setting;
 
 local defaultConfig = {
     [internal.Setting.PlayHouseEditorMusic] = false,
     [internal.Setting.EnableAltGridSnapToggle] = false,
-    [internal.Setting.EnableAutoBuy] = true
+    [internal.Setting.EnableAutoBuy] = true,
+    [internal.Setting.EnableDecorItemCounts] = true
 };
 
 if not SimscraftConfig then
@@ -49,8 +51,17 @@ end
 
 do
     local variable = internal.Setting.EnableAutoBuy;
-    local name = "Enable Vendor AutoBuy";
-    local tooltip = "Toggles the vendor decor AutoBuy feature.";
+    local name = "Enable Decor Shopping Cart";
+    local tooltip = "Toggles the vendor decor shopping cart feature.";
+
+    local setting = Settings.CreateSetting(category, variable, name, defaultConfig[variable]);
+    Settings.CreateCheckbox(category, setting, tooltip);
+end
+
+do
+    local variable = internal.Setting.EnableDecorItemCounts;
+    local name = "Enable Vendor Decor Item Counts";
+    local tooltip = "Displays a number showing the amount of each decor item you currently have in storage, in the vendor frame.";
 
     local setting = Settings.CreateSetting(category, variable, name, defaultConfig[variable]);
     Settings.CreateCheckbox(category, setting, tooltip);
