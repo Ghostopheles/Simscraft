@@ -647,9 +647,18 @@ end);
 
 ------------
 
+local anchorsTouched = false;
 function UpdateModelPreviewFrameAnchors()
-    if HousingModelPreviewFrame and ShoppingCartFrame:IsShown() then
-        HousingModelPreviewFrame:SetPoint("TOPLEFT", ShoppingCartFrame, "TOPRIGHT", 10, 0);
+    if HousingModelPreviewFrame then
+        if ShoppingCartFrame:IsShown() then
+            HousingModelPreviewFrame:SetPoint("TOPLEFT", ShoppingCartFrame, "TOPRIGHT", 10, 0);
+            anchorsTouched = true;
+        elseif anchorsTouched and not MerchantFrame:IsShown() then
+            anchorsTouched = false;
+            HousingModelPreviewFrame:ClearAllPoints();
+            HideUIPanel(HousingModelPreviewFrame);
+            ShowUIPanel(HousingModelPreviewFrame);
+        end
     end
 end
 
