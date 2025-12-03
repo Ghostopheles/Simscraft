@@ -99,6 +99,7 @@ end
 ------------
 
 local UpdateCartToggleEnableState;
+local UpdateModelPreviewFrameAnchors;
 
 local ShoppingCartFrame = CreateFrame("Frame", "SimscraftShoppingCartFrame", MerchantFrame, "PortraitFrameFlatTemplate");
 ButtonFrameTemplate_HidePortrait(ShoppingCartFrame);
@@ -107,6 +108,7 @@ ShoppingCartFrame:SetTitle(internal.ThemeColor:WrapTextInColorCode(addonName) ..
 ShoppingCartFrame:SetSize(350, 400);
 ShoppingCartFrame:SetScript("OnShow", function()
     UpdateCartToggleEnableState();
+    UpdateModelPreviewFrameAnchors();
     SimscraftConfig.CartShown = true;
 end);
 ShoppingCartFrame.CloseButton:HookScript("OnClick", function()
@@ -645,7 +647,7 @@ end);
 
 ------------
 
-local function UpdateModelPreviewFrameAnchors()
+function UpdateModelPreviewFrameAnchors()
     if ShoppingCartFrame:IsShown() then
         HousingModelPreviewFrame:SetPoint("TOPLEFT", ShoppingCartFrame, "TOPRIGHT", 10, 0);
     end
