@@ -686,7 +686,31 @@ local CACHE_WAIT_TIME = 0.1;
 local function GetDecorNumOwnedFromItemID(itemID)
     local tryGetOwnedInfo = true;
     local catalogEntryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(itemID, tryGetOwnedInfo);
+    if not catalogEntryInfo then
+        return;
+    end
+
     return catalogEntryInfo.numStored, catalogEntryInfo.firstAcquisitionBonus;
+end
+
+local NewItemIcons = {};
+local newItemIconsSetup = false;
+local function SetupNewItemIcons()
+    if newItemIconsSetup then
+        return;
+    end
+
+    for i=1, MERCHANT_ITEMS_PER_PAGE do
+        local parent = _G["MerchantItem"..i.."ItemButton"];
+        local icon = parent:CreateTexture(nil, "OVERLAY", nil, 2);
+        icon:SetSize(24, 24);
+        icon:SetPoint("CENTER", parent, "TOPLEFT");
+        icon:SetAtlas("wowlabs_spellbucketicon-sword");
+
+        tinsert(NewItemIcons, icon);
+    end
+
+    newItemIconsSetup = true;
 end
 
 local ItemCountTextColors = {
@@ -707,10 +731,10 @@ local function CreateItemCountWidget(parent)
     return str;
 end
 
-local function UpdateItemCountWidgetForItemID(widget, itemID)
-    local numStored = GetDecorNumOwnedFromItemID(itemID);
+local function UpdateItemCountWidgetForItemID(widget, itemID, nonPagedIndex)
+    local numStored, firstAcquisitionBonus = GetDecorNumOwnedFromItemID(itemID);
     local color;
-    if numStored == 0 then
+    if numStored == 0 or not numStored then
         color = ItemCountTextColors.NONE;
     elseif numStored < ITEM_COUNT_LOW_LIMIT then
         color = ItemCountTextColors.LOW;
@@ -720,6 +744,9 @@ local function UpdateItemCountWidgetForItemID(widget, itemID)
 
     local text = format(ItemCountFormat, color:WrapTextInColorCode(numStored));
     widget:SetTextToFit(text);
+
+    local icon = NewItemIcons[nonPagedIndex];
+    icon:SetShown((firstAcquisitionBonus and firstAcquisitionBonus > 0) or false);
 end
 
 --- creating our widgets
@@ -753,7 +780,7 @@ local function OnMerchantFrameUpdate()
         if itemID then
             local isDecorItem = itemID and C_Item.IsDecorItem(itemID);
             if isDecorItem then
-                C_Timer.After(CACHE_WAIT_TIME, function() UpdateItemCountWidgetForItemID(widget, itemID); end);
+                C_Timer.After(CACHE_WAIT_TIME, function() UpdateItemCountWidgetForItemID(widget, itemID, i); end);
             end
             widget:SetShown(isDecorItem);
         else
@@ -769,3 +796,4 @@ end
 hooksecurefunc("MerchantFrame_Update", OnMerchantFrameUpdate);
 EventRegistry:RegisterFrameEventAndCallback("NEW_HOUSING_ITEM_ACQUIRED", OnMerchantFrameUpdate);
 EventRegistry:RegisterFrameEventAndCallback("HOUSING_CATALOG_SEARCHER_RELEASED", RefreshSearcher);
+EventUtil.RegisterOnceFrameEventAndCallback("MERCHANT_SHOW", SetupNewItemIcons);
