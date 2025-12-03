@@ -6,7 +6,7 @@ local addonName = ...;
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
-local ASYNC_PURCHASE_STEP = 0.5; -- in seconds
+local ASYNC_PURCHASE_STEP = 0.75; -- in seconds
 local MAX_PURCHASE_ACTIONS_PER_TICK = 5;
 local HIGH_COST_THRESHOLD = 25000000; -- 2,500 gold
 local PURCHASE_COMPLETION_SOUNDKIT = SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE;
@@ -648,7 +648,7 @@ end);
 ------------
 
 function UpdateModelPreviewFrameAnchors()
-    if ShoppingCartFrame:IsShown() then
+    if HousingModelPreviewFrame and ShoppingCartFrame:IsShown() then
         HousingModelPreviewFrame:SetPoint("TOPLEFT", ShoppingCartFrame, "TOPRIGHT", 10, 0);
     end
 end
