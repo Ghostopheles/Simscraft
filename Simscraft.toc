@@ -7,8 +7,6 @@
 ## LoadSavedVariablesFirst: 1
 ## SavedVariables: SimscraftConfig
 
-## OptionalDeps: Krowi_ExtendedVendorUI
-
 ## X-License: Public Domain
 
 ## Category: Roleplay
