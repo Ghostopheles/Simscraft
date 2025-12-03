@@ -785,10 +785,20 @@ local function OnMerchantFrameUpdate()
         local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
         local itemID = GetMerchantItemID(index);
         widget:Hide();
+        local icon = NewItemIcons[i];
+        if icon then
+            icon:Hide();
+        end
         if itemID then
             local isDecorItem = itemID and C_Item.IsDecorItem(itemID);
             if isDecorItem then
-                C_Timer.After(CACHE_WAIT_TIME, function() UpdateItemWidgetsForItemID(widget, itemID, i); end);
+                local currentPage = MerchantFrame.page;
+                C_Timer.After(CACHE_WAIT_TIME, function()
+                    if MerchantFrame.page ~= currentPage then
+                        return;
+                    end
+                    UpdateItemWidgetsForItemID(widget, itemID, i);
+                end);
             end
         end
     end
