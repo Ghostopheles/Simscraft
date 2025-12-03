@@ -72,11 +72,11 @@ OverlayTexture:SetAllPoints();
 local OverlayProgressBar = CreateFrame("StatusBar", nil, PurchasingOverlay, "SimscraftPurchaseOverlayProgressBarTemplate");
 OverlayProgressBar:SetPoint("CENTER");
 
-local function InitOverlayProgressBar(self, maxValue)
-    self:SetMinMaxSmoothedValue(0, maxValue);
-    self:SetValue(0);
-    self.ProgressText:SetTextToFit("");
-    self.PurchasingText:SetTextToFit("Purchasing");
+local function InitOverlayProgressBar(maxValue)
+    OverlayProgressBar:SetMinMaxSmoothedValue(0, maxValue);
+    OverlayProgressBar:SetValue(0);
+    OverlayProgressBar.ProgressText:SetTextToFit("");
+    OverlayProgressBar.PurchasingText:SetTextToFit("Purchasing");
 end
 
 local function UpdateOverlayProgressBar(self, current)
@@ -89,8 +89,8 @@ Registry:RegisterCallback(Events.CART_TICK_PURCHASE, UpdateOverlayProgressBar, O
 
 local OverlayTextTicker;
 local OverlayTextStep = 1;
-local function ShowPurchaseOverlay(numItemsInCart)
-    PurchasingOverlay:Show();
+local function ShowPurchaseOverlay(self, numItemsInCart)
+    self:Show();
     InitOverlayProgressBar(numItemsInCart);
     OverlayTextTicker = C_Timer.NewTicker(1, function()
         local text = "Purchasing" .. strrep(".", OverlayTextStep);
@@ -101,7 +101,7 @@ local function ShowPurchaseOverlay(numItemsInCart)
         end
     end);
 end
-Registry:RegisterCallback(Events.CART_BEGIN_PURCHASE, ShowPurchaseOverlay, OverlayProgressBar);
+Registry:RegisterCallback(Events.CART_BEGIN_PURCHASE, ShowPurchaseOverlay, PurchasingOverlay);
 
 local function HidePurchaseOverlay(self)
     if OverlayTextTicker then
@@ -246,3 +246,9 @@ local function OnBeginPurchase()
     ClearCartButton:Disable();
 end
 Registry:RegisterCallback(Events.CART_BEGIN_PURCHASE, OnBeginPurchase);
+
+local function OnClearCart()
+    DataProvider = CreateDataProvider();
+    ScrollView:SetDataProvider(DataProvider);
+end
+Registry:RegisterCallback(Events.CART_CLEAR, OnClearCart);

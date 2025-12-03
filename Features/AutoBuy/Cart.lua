@@ -94,6 +94,7 @@ function Cart.AddItemToCartByIndex(index)
         scrollBox:ScrollToEnd();
     end
 end
+Registry:RegisterCallback(Events.CART_ADD_ITEM_BY_INDEX, function(_, index) Cart.AddItemToCartByIndex(index); end);
 
 function Cart.RemoveItemFromCartByIndex(index)
     local dataProvider = GetDataProvider();
@@ -101,6 +102,7 @@ function Cart.RemoveItemFromCartByIndex(index)
         return data.Index == index;
     end);
 end
+Registry:RegisterCallback(Events.CART_REMOVE_ITEM_BY_INDEX, function(_, index) Cart.RemoveItemFromCartByIndex(index); end);
 
 function Cart.GetCostForItemEntry(itemEntry, stackCost)
     local index = itemEntry.Index;

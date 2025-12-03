@@ -2,8 +2,6 @@
 -- TODO: add an OnEscapePressed handler to the cart items edit box
 -- TODO: maybe enable hyperlinks on the item labels?
 
-local addonName = ...;
-
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
