@@ -78,6 +78,8 @@ function Cart.SetQuantityForItemInCartByIndex(index, newQuantity)
 end
 
 function Cart.AddItemToCartByIndex(index)
+    SimscraftShoppingCartFrame:Show();
+
     local scrollBox = GetScrollBox();
     local dataProvider = GetDataProvider();
 
