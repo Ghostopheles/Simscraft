@@ -3,7 +3,7 @@
 
 ## Added
 - Added a tooltip to the first acquisition/item count strings to make their meaning a bit clearer.
-- Added the ability to ctrl-click (or right-click) on a shopping cart entry's item button to preview the item.
+- Added the ability to ctrl-click on a shopping cart entry's item button to preview the item.
 
 ## Fixes
 - Fixed an issue that would cause the item count and/or the first acquisition widgets to get stuck or not update properly when switching pages.
