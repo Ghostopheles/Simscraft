@@ -6,6 +6,26 @@ local AutoBuy = internal.AutoBuy;
 
 ------------
 
+SimscraftShoppingCartEntryItemButtonMixin = CreateFromMixins(ItemButtonMixin);
+
+function SimscraftShoppingCartEntryItemButtonMixin:OnUpdate(deltaTime)
+    if self:IsMouseOver() then
+        if IsModifiedClick("DRESSUP") then
+            ShowInspectCursor();
+        else
+            ResetCursor();
+        end
+    end
+end
+
+function SimscraftShoppingCartEntryItemButtonMixin:OnClick(button)
+    if IsModifiedClick("DRESSUP") then
+        DressUpLink(self:GetItemLink());
+    end
+end
+
+------------
+
 ShoppingCartEntryMixin = {};
 
 function ShoppingCartEntryMixin:OnLoad()

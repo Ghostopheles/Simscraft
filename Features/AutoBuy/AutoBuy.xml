@@ -19,10 +19,17 @@
         </KeyValues>
     </Button>
 
+    <ItemButton name="SimscraftShoppingCartEntryItemButtonTemplate" mixin="SimscraftShoppingCartEntryItemButtonMixin" virtual="true">
+        <Scripts>
+            <OnUpdate method="OnUpdate"/>
+            <OnClick method="OnClick"/>
+        </Scripts>
+    </ItemButton>
+
     <Frame name="SimscraftShoppingCartEntryTemplate" mixin="ShoppingCartEntryMixin" virtual="true">
         <Size y="25" />
         <Frames>
-            <ItemButton parentKey="ItemButton" scale="0.75">
+            <ItemButton parentKey="ItemButton" scale="0.75" inherits="SimscraftShoppingCartEntryItemButtonTemplate">
                 <Anchors>
                     <Anchor point="LEFT" x="5" />
                 </Anchors>
