@@ -13,7 +13,7 @@ local Cart = AutoBuy.Cart;
 ------------
 
 local function GetHelpTextModifier()
-    local fmt = NORMAL_FONT_COLOR:WrapTextInColorCode("[%s]");
+    local fmt = "Hold the " .. NORMAL_FONT_COLOR:WrapTextInColorCode("[%s]") .. " and right-click";
     local key = internal.Settings.GetSetting(internal.Setting.AddToCartModifier);
     return format(fmt, _G[key .. "_KEY"]);
 end
