@@ -232,6 +232,9 @@ local function SetupFirstAcquisitonIcon(itemFrame)
     icon:SetPoint("CENTER", parent, "TOPLEFT");
     icon:SetAtlas("wowlabs_spellbucketicon-sword");
 
+    icon.tooltipText = "This item's first acquisition bonus is available.";
+    internal.AddTooltip(icon);
+
     --TODO: add a tooltip that explains wtf this icon is
 
     itemFrame.FirstAcquisitionIcon = icon;
@@ -243,6 +246,9 @@ local function SetupItemCountString(itemFrame)
     str:SetJustifyH("LEFT");
     str:SetJustifyV("MIDDLE");
     str:SetPoint("BOTTOMRIGHT");
+
+    str.tooltipText = "Number of this item currently in storage.";
+    internal.AddTooltip(str);
 
     itemFrame.ItemCountString = str;
     return str;
