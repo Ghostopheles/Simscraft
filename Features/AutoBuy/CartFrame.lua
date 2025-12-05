@@ -64,7 +64,9 @@ HelpText:SetPoint("CENTER", 0, 15);
 HelpText:SetJustifyH("CENTER");
 HelpText:SetJustifyV("MIDDLE");
 HelpText:SetTextColor(GRAY_FONT_COLOR:GetRGBA());
-HelpText:SetText("Your shopping cart is currently empty.|n" .. GetHelpTextModifier() .. " to add an item to your cart.");
+HelpText:SetScript("OnShow", function()
+    HelpText:SetText("Your shopping cart is currently empty.|n" .. GetHelpTextModifier() .. " to add an item to your cart.");
+end);
 
 ------
 
