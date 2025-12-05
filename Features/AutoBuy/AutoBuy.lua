@@ -99,12 +99,14 @@ end
 local function CheckDecorItemsAndShowFrame()
     for i=1, GetMerchantNumItems() do
         local itemID = GetMerchantItemID(i);
-        local item = Item:CreateFromItemID(itemID);
-        item:ContinueOnItemLoad(function()
-            if C_Item.IsDecorItem(itemID) then
-                ShowAutoBuy();
-            end
-        end);
+        if itemID then
+            local item = Item:CreateFromItemID(itemID);
+            item:ContinueOnItemLoad(function()
+                if C_Item.IsDecorItem(itemID) then
+                    ShowAutoBuy();
+                end
+            end);
+        end
     end
 end
 
