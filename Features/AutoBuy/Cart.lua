@@ -252,6 +252,7 @@ function Cart.AsyncFinalizePurchase()
     Tick();
     CartAsyncPurchaseTicker = C_Timer.NewTicker(ASYNC_PURCHASE_STEP, Tick);
 end
+Registry:RegisterCallback(Events.CART_TRY_PURCHASE, Cart.AsyncFinalizePurchase);
 
 function Cart.OnAsyncPurchaseComplete()
     Cart.Flush();
