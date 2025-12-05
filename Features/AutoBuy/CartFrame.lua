@@ -12,6 +12,14 @@ local Cart = AutoBuy.Cart;
 
 ------------
 
+local function GetHelpTextModifier()
+    local fmt = NORMAL_FONT_COLOR:WrapTextInColorCode("[%s]");
+    local key = internal.Settings.GetSetting(internal.Setting.AddToCartModifier);
+    return format(fmt, _G[key .. "_KEY"]);
+end
+
+------------
+
 local ShoppingCartFrame = CreateFrame("Frame", "SimscraftShoppingCartFrame", MerchantFrame, "PortraitFrameFlatTemplate");
 ButtonFrameTemplate_HidePortrait(ShoppingCartFrame);
 ShoppingCartFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 10, 0);
@@ -56,7 +64,7 @@ HelpText:SetPoint("CENTER", 0, 15);
 HelpText:SetJustifyH("CENTER");
 HelpText:SetJustifyV("MIDDLE");
 HelpText:SetTextColor(GRAY_FONT_COLOR:GetRGBA());
-HelpText:SetText("Your shopping cart is currently empty.|n" .. WARDROBE_SHORTCUTS_TUTORIAL_2 .. " to add an item to your cart.");
+HelpText:SetText("Your shopping cart is currently empty.|n" .. GetHelpTextModifier() .. " to add an item to your cart.");
 
 ------
 
