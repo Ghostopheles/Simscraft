@@ -1,3 +1,8 @@
+# v1.0.3
+
+## Fixes
+- Fixed (maybe) a crash that could be caused during garbage collection by the catalog searcher thingamabob.
+
 # v1.0.2
 - Restructured the addon a bit to make it more flexible and easier to add features to in the future.
 

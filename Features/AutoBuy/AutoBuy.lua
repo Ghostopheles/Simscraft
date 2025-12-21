@@ -333,7 +333,7 @@ Registry:RegisterCallback(Events.NEW_HOUSING_ITEM_ACQUIRED, OnMerchantUpdate);
 
 --- necessary to populate the quantity data in the HousingCatalogEntryInfo struct
 local function RefreshSearcher()
-    C_HousingCatalog.CreateCatalogSearcher();
+    RunNextFrame(C_HousingCatalog.CreateCatalogSearcher);
 end
 Registry:RegisterCallback("MERCHANT_SHOW", RefreshSearcher);
 Registry:RegisterCallback("ZONE_CHANGED", RefreshSearcher);
