@@ -1,3 +1,9 @@
+# v1.0.4
+
+## Removed
+- Removed the included Sims 4 music
+    - This is being done for a few reasons, including a new Curseforge policy, and something about playing with fire. Sorry!
+
 # v1.0.3
 
 ## Fixes
