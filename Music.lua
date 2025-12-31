@@ -34,6 +34,10 @@ end
 local LAST_SOUND_INDEX;
 
 local function SelectRandomSoundFile()
+    if #SOUND_FILES == 0 then
+        return
+    end
+
     local idx;
     repeat
         idx = random(1, #SOUND_FILES);
@@ -76,7 +80,9 @@ end
 
 local function PlayRandomSong()
     local soundFile = SelectRandomSoundFile();
-    PlaySong(soundFile);
+    if soundFile then
+        PlaySong(soundFile);
+    end
 end
 
 ---@param fadeTime number?

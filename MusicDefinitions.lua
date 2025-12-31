@@ -9,11 +9,5 @@
 local internal = select(2, ...);
 
 internal.SOUND_FILES = {
-    TS4Theme = 134,
-    TestCard4 = 178,
-    SulSul = 187,
-    Beatrix = 214,
-    Breakfast = 179,
-    MeToo = 161,
-    Milan = 197
+--    ExampleSong = 134,
 };
