@@ -5,7 +5,7 @@
 ## Version: @project-version@
 ## IconTexture: Interface/ICONS/inv_babypotadpole_red
 ## LoadSavedVariablesFirst: 1
-## SavedVariables: SimscraftConfig
+## SavedVariables: SimscraftConfig, SimscraftShoppingLists
 
 ## X-License: Public Domain
 

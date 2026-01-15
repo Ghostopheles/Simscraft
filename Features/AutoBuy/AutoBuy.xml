@@ -4,6 +4,7 @@
     <Include file="Events.lua"/>
     <Include file="CartEntry.lua"/>
     <Include file="Cart.lua"/>
+    <Include file="ShoppingLists/ShoppingList.xml"/>
 
     <Button name="SimscraftClearCartButtonTemplate" inherits="UIButtonTemplate" virtual="true">
         <Size x="40" y="40"/>
