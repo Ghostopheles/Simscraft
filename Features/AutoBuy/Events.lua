@@ -30,7 +30,6 @@ local Events = {
     NEW_HOUSING_ITEM_ACQUIRED = "NEW_HOUSING_ITEM_ACQUIRED",
     ZONE_CHANGED = "ZONE_CHANGED",
     ZONE_CHANGED_NEW_AREA = "ZONE_CHANGED_NEW_AREA",
-    HOUSING_CATALOG_SEARCHER_RELEASED = "HOUSING_CATALOG_SEARCHER_RELEASED"
 };
 
 ---@class SimscraftAutoBuyEventRegistry : CallbackRegistryMixin
@@ -56,7 +55,6 @@ local FrameEvents = {
     "MERCHANT_CLOSED",
     "ZONE_CHANGED",
     "ZONE_CHANGED_NEW_AREA",
-    "HOUSING_CATALOG_SEARCHER_RELEASED"
 };
 
 local EventFrame = CreateFrame("Frame");

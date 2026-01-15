@@ -340,4 +340,3 @@ end
 Registry:RegisterCallback("MERCHANT_SHOW", RefreshSearcher);
 Registry:RegisterCallback("ZONE_CHANGED", RefreshSearcher);
 Registry:RegisterCallback("ZONE_CHANGED_NEW_AREA", RefreshSearcher);
-Registry:RegisterCallback("HOUSING_CATALOG_SEARCHER_RELEASED", RefreshSearcher);
