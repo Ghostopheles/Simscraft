@@ -93,7 +93,7 @@
     </Frame>
 
     <Frame name="SimscraftShoppingListManagerFrame" parent="UIParent"
-        inherits="PortraitFrameFlatTemplate" mixin="SimscraftShoppingListManagerFrameMixin">
+        inherits="PortraitFrameFlatTemplate" mixin="SimscraftShoppingListManagerFrameMixin" hidden="true">
         <Size x="750" y="600" />
         <Anchors>
             <Anchor point="CENTER" />
