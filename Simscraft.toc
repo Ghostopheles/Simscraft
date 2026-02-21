@@ -26,9 +26,11 @@
 Simscraft.lua
 Settings.lua
 SettingsDefinitions.lua
+ColorUtil.lua
 
 MusicDefinitions.lua
 Music.lua
 
 Features/AutoBuy/AutoBuy.xml
 Features/Tweaks.lua
+Features/DyeWheel/DyeWheel.xml
