@@ -12,6 +12,7 @@ local Setting = {
     EnableDecorItemCounts = "EnableDecorItemCounts",
     EnableDecorNewItemIcon = "EnableDecorNewItemIcon",
     AddToCartModifier = "AddToCartModifier",
+    UseNewDyePicker = "UseNewDyePicker"
 };
 internal.Setting = Setting;
 
@@ -21,7 +22,8 @@ local defaultConfig = {
     [internal.Setting.EnableAutoBuy] = true,
     [internal.Setting.EnableDecorItemCounts] = true,
     [internal.Setting.EnableDecorNewItemIcon] = true,
-    [internal.Setting.AddToCartModifier] = "SHIFT"
+    [internal.Setting.AddToCartModifier] = "SHIFT",
+    [internal.Setting.UseNewDyePicker] = true,
 };
 
 if not SimscraftConfig then
@@ -106,4 +108,13 @@ function S.IsAddToCartModifierDown()
     elseif key == "SHIFT" then
         return IsShiftKeyDown();
     end
+end
+
+do
+    local variable = internal.Setting.UseNewDyePicker;
+    local name = "Enable Simscraft dye picker";
+    local tooltip = "Enables the color wheel-styled dye picker.";
+
+    local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
+    S.CreateCheckbox(category, setting, tooltip);
 end

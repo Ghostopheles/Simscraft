@@ -11,16 +11,22 @@ function SimscraftDyeColorMixin:OnEnter()
     local displayInfo = self:GetDisplayInfo();
     GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT");
     GameTooltip_AddHighlightLine(GameTooltip, displayInfo.name);
-    GameTooltip_AddInstructionLine(GameTooltip, format("Available: %d", displayInfo.numOwned));
+
+    local color = RED_FONT_COLOR;
+    local available = HOUSING_DECOR_CUSTOMIZATION_DYE_NUM_OWNED:format(displayInfo.numOwned);
+    if displayInfo.numOwned > 0 then
+        color = GREEN_FONT_COLOR;
+    end
+    GameTooltip_AddColoredLine(GameTooltip, available, color);
     GameTooltip:Show();
 
-    --self.Highlight:Show();
+    if not self.Selected then
+        PlaySound(SOUNDKIT.HOUSING_CUSTOMIZE_DYE_HOVER);
+    end
 end
 
 function SimscraftDyeColorMixin:OnLeave()
     GameTooltip:Hide();
-
-    --self.Highlight:Hide();
 end
 
 function SimscraftDyeColorMixin:OnClick()
@@ -38,16 +44,20 @@ function SimscraftDyeColorMixin:Select()
     C_HousingCustomizeMode.ApplyDyeToSelectedDecor(dyeSlotInfo.ID, dyeInfo.ID);
 
     self.SelectedBorder:Show();
+
+    PlaySound(SOUNDKIT.HOUSING_CUSTOMIZE_DYE_SELECT);
+    self.Selected = true;
 end
 
 function SimscraftDyeColorMixin:Deselect()
     self.SelectedBorder:Hide();
+    self.Selected = false;
 end
 
 ---@param data DyeColorDisplayInfo
 function SimscraftDyeColorMixin:Init(data)
     self:SetDisplayInfo(data);
-    self:SetColor(data.swatchColorStart, data.swatchColorEnd);
+    self:SetColors(data.swatchColorStart, data.swatchColorEnd);
 end
 
 ---@param displayInfo DyeColorDisplayInfo
@@ -62,7 +72,7 @@ end
 
 ---@param startColor ColorMixin
 ---@param endColor ColorMixin
-function SimscraftDyeColorMixin:SetColor(startColor, endColor)
+function SimscraftDyeColorMixin:SetColors(startColor, endColor)
     self.StartColor = startColor;
     self.EndColor = endColor;
 
@@ -72,6 +82,6 @@ end
 
 ---@return ColorMixin startColor
 ---@return ColorMixin endColor
-function SimscraftDyeColorMixin:GetColor()
+function SimscraftDyeColorMixin:GetColors()
     return self.StartColor, self.EndColor;
 end

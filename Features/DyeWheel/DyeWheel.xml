@@ -3,8 +3,43 @@
     <Include file="Color.xml"/>
     <Include file="DyeWheel.lua"/>
 
-    <Frame name="SimscraftDyeWheel" mixin="SimscraftDyeWheelMixin" parent="WorldFrame" scale="0.4" hidden="true">
+    <Frame name="SimscraftDyeWheel" mixin="SimscraftDyeWheelMixin" parent="WorldFrame" scale="0.5" hidden="true">
         <Size x="600" y="600"/>
+
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="Background" atlas="housing-basic-container" setAllPoints="true"/>
+            </Layer>
+        </Layers>
+
+        <Frames>
+            <Button parentKey="RemoveDyeButton" enableMouse="true" mixin="SimscraftRemoveDyeButtonMixin">
+                <Size x="65" y="65"/>
+                <Anchors>
+                    <Anchor point="RIGHT" x="-20"/>
+                </Anchors>
+                <Layers>
+                    <Layer level="BACKGROUND">
+                        <Texture parentKey="Background" atlas="Housing_Customize_Dye_RemoveDye" setAllPoints="true"/>
+                    </Layer>
+                    <Layer level="BORDER">
+                        <Texture parentKey="Border" atlas="Housing_Customize_Dye_Frame_Default" setAllPoints="true"/>
+                    </Layer>
+                    <Layer level="HIGHLIGHT" textureSubLevel="1">
+                        <Texture parentKey="HighlightBorder" atlas="Housing_Customize_Dye_Frame_Selected" desaturated="true" setAllPoints="true"/>
+                    </Layer>
+                    <Layer level="OVERLAY" textureSubLevel="1">
+                        <Texture parentKey="SelectedBorder" atlas="Housing_Customize_Dye_Frame_Selected" setAllPoints="true" hidden="true"/>
+                    </Layer>
+                </Layers>
+                <Scripts>
+                    <OnClick method="OnClick"/>
+                    <OnEnter method="OnEnter"/>
+                    <OnLeave method="OnLeave"/>
+                </Scripts>
+            </Button>
+        </Frames>
+
         <Scripts>
             <OnLoad method="OnLoad"/>
             <OnShow method="OnShow"/>

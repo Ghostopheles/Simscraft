@@ -3,11 +3,48 @@ local internal = select(2, ...);
 
 local ColorUtil = internal.ColorUtil;
 
-local GRID_SIZE = 9;
+local NEUTRAL_THRESHOLD = 0.20;
 local COLOR_CELL_SIZE = 40;
+local FRAME_SIZE_SPACING = 20;
 local MAX_DYE_COLORS = 62;
+local WHEEL_RADIUS = ceil(sqrt(MAX_DYE_COLORS / math.pi));
 
 local DECOR_CUSTOMIZATION_FRAME;
+
+------------
+
+local function ShouldEnableDyePicker()
+    return internal.Settings.GetSetting(internal.Setting.UseNewDyePicker);
+end
+
+------------
+
+SimscraftRemoveDyeButtonMixin = {};
+
+function SimscraftRemoveDyeButtonMixin:OnEnter()
+    GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT");
+    GameTooltip_AddHighlightLine(GameTooltip, HOUSING_DECOR_CUSTOMIZATION_DEFAULT_COLOR);
+    GameTooltip:Show();
+end
+
+function SimscraftRemoveDyeButtonMixin:OnLeave()
+    GameTooltip:Hide();
+end
+
+function SimscraftRemoveDyeButtonMixin:OnClick()
+    SimscraftDyeWheel:SelectDye(self);
+end
+
+function SimscraftRemoveDyeButtonMixin:Select()
+    self.SelectedBorder:Show();
+
+    local dyeSlotInfo = DyeSelectionPopout.dyeSlotInfo;
+    C_HousingCustomizeMode.ApplyDyeToSelectedDecor(dyeSlotInfo.ID);
+end
+
+function SimscraftRemoveDyeButtonMixin:Deselect()
+    self.SelectedBorder:Hide();
+end
 
 ------------
 
@@ -15,19 +52,44 @@ SimscraftDyeWheelMixin = {};
 
 function SimscraftDyeWheelMixin:OnLoad()
     self.ColorFrames = {};
-    self.SwatchPool = CreateFramePool("Button", self, "SimscraftDyeColorTemplate", nil, nil, nil, MAX_DYE_COLORS);
+    tinsert(self.ColorFrames, 0, self.RemoveDyeButton);
+    self.SwatchPool = CreateFramePool("Button", self, "SimscraftDyeColorTemplate");
 
-    local size = (GRID_SIZE * COLOR_CELL_SIZE) + 5;
-    self:SetSize(size, size)
+    local size = ((WHEEL_RADIUS * 2) * COLOR_CELL_SIZE) + FRAME_SIZE_SPACING;
+    self:SetSize(size, size);
 end
 
 function SimscraftDyeWheelMixin:OnShow()
-    if not self.Loaded then
-        self:Populate();
+    if not ShouldEnableDyePicker() then
+        self:Hide();
+        return;
     end
 
-    local parent = DECOR_CUSTOMIZATION_FRAME or HouseEditorFrame.CustomizeModeFrame.DecorCustomizationsPane;
-    self:SetPoint("TOPRIGHT", parent, "TOPLEFT", -8, 0);
+    if not self.Loaded then
+        self:Populate();
+
+        local parent = DECOR_CUSTOMIZATION_FRAME;
+        if not parent then
+            DECOR_CUSTOMIZATION_FRAME = HouseEditorFrame.CustomizeModeFrame.DecorCustomizationsPane;
+            parent = DECOR_CUSTOMIZATION_FRAME;
+        end
+
+        self:SetPoint("TOPRIGHT", parent, "TOPLEFT", -15, 0);
+
+        hooksecurefunc(DyeSelectionPopout, "SetDyeSlotInfo", function(_, dyeSlotInfo)
+            self:UpdateSelectedDye(dyeSlotInfo);
+        end);
+    end
+
+    self:UpdateSelectedDye();
+end
+
+function SimscraftDyeWheelMixin:UpdateSelectedDye(dyeSlotInfo)
+    local selectedDyeSlot = dyeSlotInfo or DyeSelectionPopout.dyeSlotInfo;
+    local dyeButton = self.ColorFrames[selectedDyeSlot.dyeColorID];
+    if dyeButton then
+        self:SelectDye(dyeButton);
+    end
 end
 
 ---@param dyeInfo DyeColorDisplayInfo
@@ -35,72 +97,169 @@ end
 function SimscraftDyeWheelMixin:AcquireColorFrame(dyeInfo)
     ---@type SimscraftDyeColorFrame
     local f = self.SwatchPool:Acquire();
+    f:SetSize(COLOR_CELL_SIZE, COLOR_CELL_SIZE);
     f:Init(dyeInfo);
     f:Show();
 
+    self.ColorFrames[dyeInfo.ID] = f;
     return f;
 end
 
----@param colorFrames SimscraftDyeColorFrame[]
-function SimscraftDyeWheelMixin:SortColorsByColorWheel(colorFrames)
-    local tagged = {};
-    for _, colorFrame in ipairs(colorFrames) do
-        local color = colorFrame:GetColor();
-        local h, s, v = ColorUtil.RGBtoHSV(color:GetRGB());
-        tinsert(tagged, {
-            frame = colorFrame,
-            color = color,
-            h = h, s = s, v = v
-        });
-    end
+NUM_EXTRA_CELLS = 0;
+function SimscraftDyeWheelMixin:GenerateCells(neutralCount, chromaticCount)
+    local TWO_PI = 2 * math.pi;
+    local maxCount = neutralCount + chromaticCount;
 
-    sort(tagged, function(a, b)
-        local aNeutral = a.s < 0.15;
-        local bNeutral = b.s < 0.15;
-        if aNeutral ~= bNeutral then return bNeutral end
-        if aNeutral and bNeutral then return a.v > b.v end
+    local extraRings = - 1;
+    local maxRadius = ceil(sqrt(maxCount / math.pi)) + extraRings;
 
-        local hueDiff = a.h - b.h;
-        if abs(hueDiff) > 5 then return hueDiff < 0 end
-        return a.s > b.s;
-    end)
-
-    local half = floor(GRID_SIZE / 2);
-
-    local cells = {};
-    for row = -half, half do
-        for col = -half, half do
-            local dist = sqrt(col * col + row * row);
-            if dist <= half + 0.5 then
-                local angle = atan2(row, col);
-                if angle < 0 then angle = angle + 2 * math.pi end
-                tinsert(cells, {
-                    col = col, row = row,
-                    angle = angle,
-                    dist = dist
-                });
+    local allCells = {};
+    local seenPositions = {};
+    for row = -maxRadius, maxRadius do
+        for col = -maxRadius, maxRadius do
+            local d = sqrt(col * col + row * row);
+            if d <= maxRadius + 0.5 then
+                local key = col .. "," .. row;
+                if not seenPositions[key] then
+                    seenPositions[key] = true;
+                    local angle = atan2(row, col);
+                    if angle < 0 then
+                        angle = angle + TWO_PI;
+                    end
+                    tinsert(allCells, {
+                        col=col, row=row,
+                        angle=angle, dist=d
+                    });
+                end
             end
         end
     end
 
-    sort(cells, function(a, b)
-        local aDeg = deg(a.angle);
-        local bDeg = deg(b.angle);
+    sort(allCells, function(a, b)
+        if abs(a.dist - b.dist) > 0.1 then
+            return a.dist < b.dist;
+        end
+        return a.angle < b.angle;
+    end);
 
-        local aBand = floor(aDeg / 10);
-        local bBand = floor(bDeg / 10);
-        if aBand ~= bBand then return aBand < bBand end
-        return a.dist > b.dist;
-    end)
+    local usedPositions = {};
+    local centerCells = {};
+    for _, cell in ipairs(allCells) do
+        local key = cell.col .. "," .. cell.row;
+        if not usedPositions[key] then
+            usedPositions[key] = true;
+            tinsert(centerCells, cell);
+            if #centerCells >= neutralCount then
+                break;
+            end
+        end
+    end
 
-    for i, entry in ipairs(tagged) do
+    local candidates = {};
+    for _, cell in ipairs(allCells) do
+        local key = cell.col .. "," .. cell.row;
+        if not usedPositions[key] then
+            tinsert(candidates, cell);
+        end
+    end
+
+    local usedIndices = {};
+    local outerCells = {};
+
+    for slot = 0, chromaticCount - 1 do
+        local idealAngle = (slot / chromaticCount) * TWO_PI;
+
+        local bestIdx = nil;
+        local bestScore = math.huge;
+        for i, cell in ipairs(candidates) do
+            if not usedIndices[i] then
+                local diff = abs(cell.angle - idealAngle);
+                if diff > math.pi then diff = TWO_PI - diff; end
+                local score = diff * 10 + cell.dist * 0.5;
+                if score < bestScore then
+                    bestScore = score;
+                    bestIdx = i;
+                end
+            end
+        end
+
+        if bestIdx then
+            usedIndices[bestIdx] = true;
+            tinsert(outerCells, candidates[bestIdx]);
+        end
+    end
+
+    local sorted = {};
+    for _, c in ipairs(centerCells) do
+        tinsert(sorted, c);
+    end
+    for _, c in ipairs(outerCells) do
+        tinsert(sorted, c);
+    end
+    return sorted;
+end
+
+function SimscraftDyeWheelMixin:GetAverageColor(startColor, endColor)
+    local curve = C_CurveUtil.CreateColorCurve();
+    curve:SetType(Enum.LuaCurveType.Linear);
+    curve:AddPoint(0, CreateColor(startColor.r, startColor.g, startColor.b));
+    curve:AddPoint(1, CreateColor(endColor.r, endColor.g, endColor.b));
+    return curve:Evaluate(0.5);
+end
+
+function SimscraftDyeWheelMixin:SortColors(colorFrames)
+    local neutrals = {};
+    local chromatic = {};
+
+    for _, colorFrame in ipairs(colorFrames) do
+        local color = self:GetAverageColor(colorFrame:GetColors());
+        local h, s, v = ColorUtil.RGBtoHSV(color.r, color.g, color.b);
+        local entry = {
+            frame = colorFrame,
+            h = h, s = s, v = v
+        };
+        if s < NEUTRAL_THRESHOLD then
+            tinsert(neutrals, entry);
+        else
+            tinsert(chromatic, entry);
+        end
+    end
+
+    sort(neutrals, function(a, b)
+        return a.v > b.v;
+    end);
+
+    sort(chromatic, function(a, b)
+        if abs(a.h - b.h) > 1 then
+            return a.h < b.h;
+        end
+        return a.s > b.s;
+    end);
+
+    local sorted = {};
+    for _, e in ipairs(neutrals) do
+        tinsert(sorted, e.frame);
+    end
+    for _, e in ipairs(chromatic) do
+        tinsert(sorted, e.frame);
+    end
+    return sorted, #neutrals, #chromatic;
+end
+
+---@param colorFrames SimscraftDyeColorFrame[]
+function SimscraftDyeWheelMixin:SetupColorWheel(colorFrames)
+    local sortedColors, numNeutral, numChromatic = self:SortColors(colorFrames);
+    local cells = self:GenerateCells(numNeutral, numChromatic);
+
+    for i, entry in ipairs(sortedColors) do
         local cell = cells[i];
-        if not cell then break end
+        if not cell then
+            break;
+        end
 
-        local f = entry.frame;
-        f:SetPoint("CENTER", self, "CENTER",
-            cell.col * COLOR_CELL_SIZE,
-           -cell.row * COLOR_CELL_SIZE)
+        local offsetX = cell.col * COLOR_CELL_SIZE;
+        local offsetY = cell.row * COLOR_CELL_SIZE;
+        entry:SetPoint("CENTER", self, "CENTER", offsetX, offsetY);
     end
 end
 
@@ -121,7 +280,7 @@ function SimscraftDyeWheelMixin:Populate()
         end
     end
 
-    self:SortColorsByColorWheel(colorFrames);
+    self:SetupColorWheel(colorFrames);
     self.Loaded = true;
 end
 
@@ -138,17 +297,36 @@ end
 
 ------------
 
--- hook deez
-
-local function HookDyePanel()
+local popoutHidden = false;
+local function ReplaceDyePanel()
     local maliciousParent = CreateFrame("Frame");
 
     local popout = DyeSelectionPopout;
-    popout:SetParent(maliciousParent);
-    popout:ClearAllPoints();
+    local originalParent = popout:GetParent();
+    local originalPoints = {};
+    for i = 1, popout:GetNumPoints() do
+        local point = CreateAnchor(popout:GetPoint(i));
+        tinsert(originalPoints, point);
+    end
 
     popout:HookScript("OnShow", function()
-        SimscraftDyeWheel:Show();
+        if ShouldEnableDyePicker() then
+            if not popoutHidden then
+                popout:SetParent(maliciousParent);
+                popout:ClearAllPoints();
+                popoutHidden = true;
+            end
+
+            SimscraftDyeWheel:Show();
+        elseif popoutHidden then
+            popout:SetParent(originalParent);
+            for _, point in ipairs(originalPoints) do
+                point:SetPoint(popout);
+            end
+
+            popout:SetDyeSlotInfo(popout.dyeSlotInfo);
+            popoutHidden = false;
+        end
     end);
 
     popout:HookScript("OnHide", function()
@@ -156,4 +334,4 @@ local function HookDyePanel()
     end);
 end
 
-EventUtil.ContinueOnAddOnLoaded("Blizzard_HouseEditor", HookDyePanel);
+EventUtil.ContinueOnAddOnLoaded("Blizzard_HouseEditor", ReplaceDyePanel);

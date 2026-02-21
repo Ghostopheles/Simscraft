@@ -3,22 +3,21 @@
     <Include file="Color.lua"/>
 
     <Button name="SimscraftDyeColorTemplate" mixin="SimscraftDyeColorMixin" enableMouse="true" virtual="true">
-        <Size x="40" y="40"/>
         <Layers>
             <Layer level="BORDER">
-                <Texture parentKey="Border" atlas="Housing_Customize_Dye_Frame_Default" useAtlasSize="false" setAllPoints="true"/>
+                <Texture parentKey="Border" atlas="Housing_Customize_Dye_Frame_Default" setAllPoints="true"/>
             </Layer>
             <Layer level="ARTWORK" textureSubLevel="1">
-                <Texture parentKey="StartColorTexture" atlas="Housing_Customize_Dye_Swatch_Base" useAtlasSize="false" setAllPoints="true"/>
+                <Texture parentKey="StartColorTexture" atlas="Housing_Customize_Dye_Swatch_Base" setAllPoints="true"/>
             </Layer>
             <Layer level="ARTWORK" textureSubLevel="2">
-                <Texture parentKey="EndColorTexture" atlas="Housing_Customize_Dye_Swatch_Gradient" useAtlasSize="false" setAllPoints="true"/>
-            </Layer>
-            <Layer level="OVERLAY" textureSubLevel="0">
-                <Texture parentKey="Highlight" atlas="Housing_Customize_Dye_Swatch_Highlight" useAtlasSize="false" alphaMode="ADD" setAllPoints="true" alpha="0.5" hidden="true"/>
+                <Texture parentKey="EndColorTexture" atlas="Housing_Customize_Dye_Swatch_Gradient" setAllPoints="true"/>
             </Layer>
             <Layer level="OVERLAY" textureSubLevel="1">
-                <Texture parentKey="SelectedBorder" atlas="Housing_Customize_Dye_Frame_Selected" useAtlasSize="false" setAllPoints="true" hidden="true"/>
+                <Texture parentKey="SelectedBorder" atlas="Housing_Customize_Dye_Frame_Selected" setAllPoints="true" hidden="true"/>
+            </Layer>
+            <Layer level="HIGHLIGHT" textureSubLevel="1">
+                <Texture parentKey="HighlightBorder" atlas="Housing_Customize_Dye_Frame_Selected" desaturated="true" setAllPoints="true"/>
             </Layer>
         </Layers>
 
