@@ -193,7 +193,7 @@ local function GetDecorInfoByItemID(itemID)
         return;
     end
 
-    return catalogEntryInfo.numStored, catalogEntryInfo.firstAcquisitionBonus;
+    return catalogEntryInfo.quantity, catalogEntryInfo.firstAcquisitionBonus;
 end
 
 local itemQuantityColors = {
