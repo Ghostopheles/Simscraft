@@ -1,24 +1,5 @@
-# v1.0.4
-
-## Removed
-- Removed the included Sims 4 music
-    - This is being done for a few reasons, including a new Curseforge policy, and something about playing with fire. Sorry!
-
-# v1.0.3
-
-## Fixes
-- Fixed (maybe) a crash that could be caused during garbage collection by the catalog searcher thingamabob.
-
-# v1.0.2
-- Restructured the addon a bit to make it more flexible and easier to add features to in the future.
+# v1.0.7
 
 ## Added
-- Added a tooltip to the first acquisition/item count strings to make their meaning a bit clearer.
-- Added the ability to ctrl-click on a shopping cart entry's item button to preview the item.
-
-## Fixes
-- Fixed an issue that would cause the item count and/or the first acquisition widgets to get stuck or not update properly when switching pages.
-
-## Updates
-- Updated the help text that is displayed on an empty cart to show the correct modifier key if the user has changed it.
-- Made the cache-refreshing much more aggressive so (hopefully) the addon doesn't lose access to accurate information about the player's decor inventory.
+- Added a color wheel-esque dye picker UI override.
+    - This is **disabled** by default, because it's not perfect and may not be everyone's preference.

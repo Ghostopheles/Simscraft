@@ -23,7 +23,7 @@ local defaultConfig = {
     [internal.Setting.EnableDecorItemCounts] = true,
     [internal.Setting.EnableDecorNewItemIcon] = true,
     [internal.Setting.AddToCartModifier] = "SHIFT",
-    [internal.Setting.UseNewDyePicker] = true,
+    [internal.Setting.UseNewDyePicker] = false,
 };
 
 if not SimscraftConfig then
