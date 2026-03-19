@@ -76,16 +76,19 @@ function SimscraftDyeWheelMixin:OnShow()
 
         self:SetPoint("TOPRIGHT", parent, "TOPLEFT", -15, 0);
 
-        hooksecurefunc(DyeSelectionPopout, "SetDyeSlotInfo", function(_, dyeSlotInfo)
-            self:UpdateSelectedDye(dyeSlotInfo);
+        hooksecurefunc(DyeSelectionPopout, "SetDyeSlotInfo", function()
+            -- since the selected dye info doesn't seem to be updated when this hook runs, i'm just gonna wait till the next frame owo
+            RunNextFrame(function()
+                self:UpdateSelectedDye();
+            end);
         end);
     end
 
     self:UpdateSelectedDye();
 end
 
-function SimscraftDyeWheelMixin:UpdateSelectedDye(dyeSlotInfo)
-    local selectedDyeSlot = dyeSlotInfo or DyeSelectionPopout.dyeSlotInfo;
+function SimscraftDyeWheelMixin:UpdateSelectedDye()
+    local selectedDyeSlot = DyeSelectionPopout.dyeSlotInfo;
     local dyeButton = self.ColorFrames[selectedDyeSlot.dyeColorID];
     if dyeButton then
         self:SelectDye(dyeButton);
@@ -174,8 +177,10 @@ function SimscraftDyeWheelMixin:GenerateCells(neutralCount, chromaticCount)
         for i, cell in ipairs(candidates) do
             if not usedIndices[i] then
                 local diff = abs(cell.angle - idealAngle);
-                if diff > math.pi then diff = TWO_PI - diff; end
-                local score = diff * 10 + cell.dist * 0.5;
+                if diff > math.pi then
+                    diff = TWO_PI - diff;
+                end
+                local score = diff * 10 + cell.dist * 3.0;
                 if score < bestScore then
                     bestScore = score;
                     bestIdx = i;
@@ -212,11 +217,13 @@ function SimscraftDyeWheelMixin:SortColors(colorFrames)
     local chromatic = {};
 
     for _, colorFrame in ipairs(colorFrames) do
-        local color = self:GetAverageColor(colorFrame:GetColors());
+        local color = colorFrame:GetColors();
         local h, s, v = ColorUtil.RGBtoHSV(color.r, color.g, color.b);
+        local band = ColorUtil.GetHueBand(h);
         local entry = {
             frame = colorFrame,
-            h = h, s = s, v = v
+            h = h, s = s, v = v,
+            band = band
         };
         if s < NEUTRAL_THRESHOLD then
             tinsert(neutrals, entry);
@@ -230,9 +237,18 @@ function SimscraftDyeWheelMixin:SortColors(colorFrames)
     end);
 
     sort(chromatic, function(a, b)
+        if a.band ~= b.band then
+            return a.band < b.band;
+        end
+
         if abs(a.h - b.h) > 1 then
             return a.h < b.h;
         end
+
+        if abs(a.v - b.v) > 0.1 then
+            return a.v > b.v;
+        end
+
         return a.s > b.s;
     end);
 
