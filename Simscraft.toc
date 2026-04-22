@@ -1,4 +1,4 @@
-## Interface: 120001
+## Interface: 120005
 ## Title: |cffa6e329Simscraft|r
 ## Notes: Augments your housing experience with the highest-quality housing helpers.
 ## Author: Ghostopheles
