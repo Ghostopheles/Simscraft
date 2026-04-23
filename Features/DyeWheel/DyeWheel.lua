@@ -3,7 +3,6 @@ local internal = select(2, ...);
 
 local ColorUtil = internal.ColorUtil;
 
-local NEUTRAL_THRESHOLD = 0.20;
 local COLOR_CELL_SIZE = 40;
 local FRAME_SIZE_SPACING = 20;
 local MAX_DYE_COLORS = 62;
@@ -111,164 +110,71 @@ function SimscraftDyeWheelMixin:AcquireColorFrame(dyeInfo)
     return f;
 end
 
-NUM_EXTRA_CELLS = 0;
-function SimscraftDyeWheelMixin:GenerateCells(neutralCount, chromaticCount)
+function SimscraftDyeWheelMixin:GenerateCells()
     local TWO_PI = 2 * math.pi;
-    local maxCount = neutralCount + chromaticCount;
-
-    local extraRings = - 1;
-    local maxRadius = ceil(sqrt(maxCount / math.pi)) + extraRings;
+    local maxRadius = WHEEL_RADIUS - 1;
 
     local allCells = {};
-    local seenPositions = {};
     for row = -maxRadius, maxRadius do
         for col = -maxRadius, maxRadius do
             local d = sqrt(col * col + row * row);
             if d <= maxRadius + 0.5 then
-                local key = col .. "," .. row;
-                if not seenPositions[key] then
-                    seenPositions[key] = true;
-                    local angle = atan2(row, col);
-                    if angle < 0 then
-                        angle = angle + TWO_PI;
-                    end
-                    tinsert(allCells, {
-                        col=col, row=row,
-                        angle=angle, dist=d
-                    });
+                local angle = atan2(row, col);
+                if angle < 0 then
+                    angle = angle + TWO_PI;
                 end
+                tinsert(allCells, {col=col, row=row, angle=angle, dist=d});
             end
         end
     end
 
+    local GAP_OFFSET = math.pi / 2;
     sort(allCells, function(a, b)
-        if abs(a.dist - b.dist) > 0.1 then
-            return a.dist < b.dist;
+        local angleA = (a.angle + GAP_OFFSET) % TWO_PI;
+        local angleB = (b.angle + GAP_OFFSET) % TWO_PI;
+        if abs(angleA - angleB) > 0.001 then
+            return angleA < angleB;
         end
-        return a.angle < b.angle;
+
+        return a.dist < b.dist;
     end);
 
-    local usedPositions = {};
-    local centerCells = {};
-    for _, cell in ipairs(allCells) do
-        local key = cell.col .. "," .. cell.row;
-        if not usedPositions[key] then
-            usedPositions[key] = true;
-            tinsert(centerCells, cell);
-            if #centerCells >= neutralCount then
-                break;
-            end
-        end
-    end
-
-    local candidates = {};
-    for _, cell in ipairs(allCells) do
-        local key = cell.col .. "," .. cell.row;
-        if not usedPositions[key] then
-            tinsert(candidates, cell);
-        end
-    end
-
-    local usedIndices = {};
-    local outerCells = {};
-
-    for slot = 0, chromaticCount - 1 do
-        local idealAngle = (slot / chromaticCount) * TWO_PI;
-
-        local bestIdx = nil;
-        local bestScore = math.huge;
-        for i, cell in ipairs(candidates) do
-            if not usedIndices[i] then
-                local diff = abs(cell.angle - idealAngle);
-                if diff > math.pi then
-                    diff = TWO_PI - diff;
-                end
-                local score = diff * 10 + cell.dist * 3.0;
-                if score < bestScore then
-                    bestScore = score;
-                    bestIdx = i;
-                end
-            end
-        end
-
-        if bestIdx then
-            usedIndices[bestIdx] = true;
-            tinsert(outerCells, candidates[bestIdx]);
-        end
-    end
-
-    local sorted = {};
-    for _, c in ipairs(centerCells) do
-        tinsert(sorted, c);
-    end
-    for _, c in ipairs(outerCells) do
-        tinsert(sorted, c);
-    end
-    return sorted;
-end
-
-function SimscraftDyeWheelMixin:GetAverageColor(startColor, endColor)
-    local curve = C_CurveUtil.CreateColorCurve();
-    curve:SetType(Enum.LuaCurveType.Linear);
-    curve:AddPoint(0, CreateColor(startColor.r, startColor.g, startColor.b));
-    curve:AddPoint(1, CreateColor(endColor.r, endColor.g, endColor.b));
-    return curve:Evaluate(0.5);
+    return allCells;
 end
 
 function SimscraftDyeWheelMixin:SortColors(colorFrames)
-    local neutrals = {};
-    local chromatic = {};
+    local processed = {};
 
     for _, colorFrame in ipairs(colorFrames) do
         local color = colorFrame:GetColors();
         local h, s, v = ColorUtil.RGBtoHSV(color.r, color.g, color.b);
-        local band = ColorUtil.GetHueBand(h);
+
         local entry = {
             frame = colorFrame,
-            h = h, s = s, v = v,
-            band = band
+            h = h, s = s, v = v
         };
-        if s < NEUTRAL_THRESHOLD then
-            tinsert(neutrals, entry);
-        else
-            tinsert(chromatic, entry);
-        end
+        tinsert(processed, entry);
     end
 
-    sort(neutrals, function(a, b)
-        return a.v > b.v;
+    sort(processed, function(a, b)
+        if abs(a.h - b.h) > 0.001 then
+            return a.h < b.h
+        end
+
+        if abs(a.s - b.s) > 0.001 then
+            return a.s < b.s
+        end
+
+        return a.v > b.v
     end);
 
-    sort(chromatic, function(a, b)
-        if a.band ~= b.band then
-            return a.band < b.band;
-        end
-
-        if abs(a.h - b.h) > 1 then
-            return a.h < b.h;
-        end
-
-        if abs(a.v - b.v) > 0.1 then
-            return a.v > b.v;
-        end
-
-        return a.s > b.s;
-    end);
-
-    local sorted = {};
-    for _, e in ipairs(neutrals) do
-        tinsert(sorted, e.frame);
-    end
-    for _, e in ipairs(chromatic) do
-        tinsert(sorted, e.frame);
-    end
-    return sorted, #neutrals, #chromatic;
+    return processed;
 end
 
 ---@param colorFrames SimscraftDyeColorFrame[]
 function SimscraftDyeWheelMixin:SetupColorWheel(colorFrames)
-    local sortedColors, numNeutral, numChromatic = self:SortColors(colorFrames);
-    local cells = self:GenerateCells(numNeutral, numChromatic);
+    local sortedColors = self:SortColors(colorFrames);
+    local cells = self:GenerateCells();
 
     for i, entry in ipairs(sortedColors) do
         local cell = cells[i];
@@ -278,7 +184,7 @@ function SimscraftDyeWheelMixin:SetupColorWheel(colorFrames)
 
         local offsetX = cell.col * COLOR_CELL_SIZE;
         local offsetY = cell.row * COLOR_CELL_SIZE;
-        entry:SetPoint("CENTER", self, "CENTER", offsetX, offsetY);
+        entry.frame:SetPoint("CENTER", self, "CENTER", offsetX, offsetY);
     end
 end
 
