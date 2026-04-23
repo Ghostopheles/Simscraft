@@ -1,0 +1,35 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
+    <Include file="RecentDyesPanel.lua"/>
+
+    <Frame name="SimscraftRecentDyesPanelTemplate" mixin="SimscraftRecentDyesPanelMixin" virtual="true">
+        <Size y="55"/>
+        <Layers>
+            <Layer level="ARTWORK">
+                <Texture parentKey="Header" atlas="TalkingHeads-TextBackground" useAtlasSize="false">
+                    <Size x="225" y="30"/>
+                    <Anchors>
+                        <Anchor point="CENTER" relativePoint="TOP" y="5"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+
+            <Layer level="OVERLAY">
+                <FontString parentKey="HeaderText" justifyH="CENTER" justifyV="MIDDLE" font="GameFontWhite" text="HOUSING_DECOR_CUSTOMIZATION_RECENTLY_USED">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.Header"/>
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.Header"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+
+            <Layer level="BACKGROUND">
+                <Texture parentKey="Background" atlas="housing-basic-container" setAllPoints="true"/>
+            </Layer>
+        </Layers>
+
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+</Ui>

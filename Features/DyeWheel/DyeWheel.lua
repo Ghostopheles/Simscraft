@@ -93,13 +93,16 @@ function SimscraftDyeWheelMixin:UpdateSelectedDye()
     if dyeButton then
         self:SelectDye(dyeButton);
     end
+    self:UpdateRecentDyes();
 end
 
 ---@param dyeInfo DyeColorDisplayInfo
 ---@return SimscraftDyeColorFrame
 function SimscraftDyeWheelMixin:AcquireColorFrame(dyeInfo)
-    ---@type SimscraftDyeColorFrame
-    local f = self.SwatchPool:Acquire();
+    local pool = self.SwatchPool;
+
+    ---@class SimscraftDyeColorFrame
+    local f = pool:Acquire();
     f:SetSize(COLOR_CELL_SIZE, COLOR_CELL_SIZE);
     f:Init(dyeInfo);
     f:Show();
@@ -309,6 +312,10 @@ function SimscraftDyeWheelMixin:SelectDye(dyeFrame)
         self.SelectedDye = dyeFrame;
         dyeFrame:Select();
     end
+end
+
+function SimscraftDyeWheelMixin:UpdateRecentDyes()
+    self.RecentDyesPanel:Update();
 end
 
 ------------
