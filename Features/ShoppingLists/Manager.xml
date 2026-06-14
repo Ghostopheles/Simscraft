@@ -1,0 +1,25 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
+
+    <Include file="Manager.lua"/>
+
+    <Frame name="SimscraftShoppingListManagerFrame" parent="UIParent" inherits="PortraitFrameFlatTemplate" mixin="SimscraftShoppingListManagerFrameMixin">
+        <Size x="400" y="500"/>
+        <Anchors>
+            <Anchor point="CENTER"/>
+        </Anchors>
+        <Frames>
+            <Frame parentKey="ScrollBox" inherits="WowScrollBoxList"/>
+            <EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar">
+                <Anchors>
+                    <Anchor point="TOPRIGHT" x="-10" y="-10"/>
+                    <Anchor point="BOTTOMRIGHT" x="-10" y="10"/>
+                </Anchors>
+            </EventFrame>
+        </Frames>
+
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+</Ui>

@@ -31,6 +31,7 @@ ColorUtil.lua
 MusicDefinitions.lua
 Music.lua
 
+Features/ShoppingLists/ShoppingList.xml
 Features/AutoBuy/AutoBuy.xml
 Features/Tweaks.lua
 Features/DyeWheel/DyeWheel.xml

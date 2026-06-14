@@ -1,0 +1,106 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
+
+    <Include file="Manager.xml"/>
+	<Include file="ItemEntry.xml"/>
+    <Include file="ShoppingList.lua"/>
+
+    <Frame name="SimscraftShoppingListImportFrame" parent="UIParent" inherits="PortraitFrameFlatTemplate" mixin="SimscraftShoppingListImportFrameMixin">
+        <Size x="350" y="125"/>
+        <Anchors>
+            <Anchor point="TOP" x="0" y="-150"/>
+        </Anchors>
+        <Frames>
+            <EditBox parentKey="EditBox" inherits="InputBoxTemplate" font="GameFontWhite" autoFocus="false">
+                <Size x="250" y="20"/>
+                <Anchors>
+                    <Anchor point="BOTTOM" x="0" y="25"/>
+                </Anchors>
+            </EditBox>
+        </Frames>
+        <Layers>
+            <Layer level="ARTWORK">
+                <FontString parentKey="HelpText" font="GameFontWhite">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="25" y="-35"/>
+                        <Anchor point="TOPRIGHT" x="-25" y="-35"/>
+                        <Anchor point="BOTTOM" relativeKey="$parent.EditBox" relativePoint="TOP" y="15"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+            <OnShow method="OnShow"/>
+        </Scripts>
+    </Frame>
+
+	<Frame name="SimscraftShoppingListFrameTemplate" mixin="SimscraftShoppingListFrameMixin" virtual="true">
+		<Frames>
+			<Frame parentKey="Header" useParentLevel="true">
+				<Size y="50"/>
+				<Anchors>
+					<Anchor point="TOPLEFT"/>
+					<Anchor point="TOPRIGHT"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString parentKey="Title" font="DatamineCleanFontBig" wordwrap="true" justifyH="CENTER" justifyV="MIDDLE" text="$SHOPPING LIST NAME$">
+							<Anchors>
+								<Anchor point="CENTER"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+					<Layer level="BACKGROUND" textureSubLevel="1">
+						<Texture parentKey="Background" atlas="housing-basic-container-woodheader" setAllPoints="true"/>
+					</Layer>
+				</Layers>
+			</Frame>
+
+			<Button parentKey="RenameButton" inherits="IconButtonTemplate">
+				<Size x="30" y="29"/>
+
+				<Anchors>
+					<Anchor point="RIGHT" relativeKey="$parent.Header" relativePoint="RIGHT" x="-20"/>
+				</Anchors>
+
+				<KeyValues>
+					<KeyValue key="iconAtlas" value="Pencil-Icon" type="string" />
+					<KeyValue key="useAtlasSize" value="true" type="boolean" />
+					<KeyValue key="tooltipText" value="Rename" />
+				</KeyValues>
+			</Button>
+
+			<Frame parentKey="Content">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.Header" relativePoint="BOTTOMLEFT"/>
+					<Anchor point="BOTTOMRIGHT"/>
+				</Anchors>
+
+				<Frames>
+					<Frame parentKey="ScrollBox" inherits="WowScrollBoxList"/>
+					<EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar">
+						<Anchors>
+							<Anchor point="TOPRIGHT" x="-10" y="-10"/>
+							<Anchor point="BOTTOMRIGHT" x="-10" y="10"/>
+						</Anchors>
+					</EventFrame>
+				</Frames>
+			</Frame>
+		</Frames>
+
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Background" atlas="catalog-list-preview-bg" setAllPoints="true"/>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="Border" atlas="housing-simple-wood-frame" setAllPoints="true"/>
+			</Layer>
+		</Layers>
+
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+		</Scripts>
+	</Frame>
+</Ui>

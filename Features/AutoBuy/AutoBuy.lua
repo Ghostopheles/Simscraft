@@ -235,8 +235,6 @@ local function SetupFirstAcquisitonIcon(itemFrame)
     icon.tooltipText = "This item's first acquisition bonus is available.";
     internal.AddTooltip(icon);
 
-    --TODO: add a tooltip that explains wtf this icon is
-
     itemFrame.FirstAcquisitionIcon = icon;
     return icon;
 end
