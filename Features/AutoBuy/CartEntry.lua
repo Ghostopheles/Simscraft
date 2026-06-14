@@ -48,7 +48,7 @@ function ShoppingCartEntryMixin:Init(data)
     self.ItemLabel:SetText(itemLink);
     self.QuantityEditBox:SetNumber(data.Quantity);
 
-    local itemCostString = AutoBuy.Cart.GenerateCostString(data);
+    local itemCostString = internal.Cart.GenerateCostString(data);
     if itemCostString ~= "" then
         self.ItemCost:SetText("x " .. itemCostString);
     else
@@ -60,15 +60,15 @@ function ShoppingCartEntryMixin:UpdateQuantityFromEditBox()
     local data = self:GetData();
     local newQuantity = self.QuantityEditBox:GetNumber();
     if newQuantity == 0 then
-        AutoBuy.Cart.RemoveItemFromCartByIndex(data.Index);
+        internal.Cart.RemoveItemFromCartByIndex(data.Index);
     else
-        AutoBuy.Cart.SetQuantityForItemInCartByIndex(data.Index, newQuantity);
+        internal.Cart.SetQuantityForItemInCartByIndex(data.Index, newQuantity);
     end
 end
 
 function ShoppingCartEntryMixin:OnRemoveButtonClicked()
     local data = self:GetData();
-    AutoBuy.Cart.RemoveItemFromCartByIndex(data.Index);
+    internal.Cart.RemoveItemFromCartByIndex(data.Index);
 end
 
 function ShoppingCartEntryMixin:OnEditBoxFocusLost()

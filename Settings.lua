@@ -13,7 +13,7 @@ internal.Settings = {};
 
 local function OnSettingChanged(_, setting, value)
     local variable = setting:GetVariable();
-    Registry:TriggerEvent(Events.SettingChanged, variable, value);
+    Registry:TriggerEvent(Events.SETTING_CHANGED, variable, value);
 end
 
 local function CreateSetting(category, variable, name, defaultValue)

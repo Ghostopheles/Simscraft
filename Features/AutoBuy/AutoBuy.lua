@@ -11,12 +11,23 @@
 local internal = select(2, ...);
 
 ---@class SimscraftAutoBuy
-local AutoBuy = internal.AutoBuy;
+local AutoBuy = {};
 
-local Events = AutoBuy.Events;
-local Registry = AutoBuy.Registry;
+local Events = internal.Events;
+local Registry = internal.Registry;
 
 local ITEM_COUNT_LOW_LIMIT = 5;
+
+local function OnCartVisibiltyToggled()
+    Registry:TriggerEvent(Events.CART_FRAME_VISIBILITY_CHANGED, SimscraftShoppingCartFrame:IsShown());
+end
+
+Registry:RegisterCallback(Events.CART_FRAME_SHOW, OnCartVisibiltyToggled);
+Registry:RegisterCallback(Events.CART_FRAME_HIDE, OnCartVisibiltyToggled);
+
+function AutoBuy.GetShoppingCartFrame()
+    return SimscraftShoppingCartFrame;
+end
 
 local function IsAutoBuyEnabled()
     return internal.Settings.GetSetting("EnableAutoBuy");

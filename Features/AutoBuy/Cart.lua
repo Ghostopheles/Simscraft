@@ -4,8 +4,8 @@ local internal = select(2, ...);
 ---@class SimscraftAutoBuy
 local AutoBuy = internal.AutoBuy;
 
-local Events = AutoBuy.Events;
-local Registry = AutoBuy.Registry;
+local Events = internal.Events;
+local Registry = internal.Registry;
 
 ------------
 
@@ -28,8 +28,7 @@ end
 
 ---@class SimscraftShoppingCart
 local Cart = {};
-
-AutoBuy.Cart = Cart;
+internal.Cart = Cart;
 
 ---@class SimscraftShoppingCartEntry
 ---@field MerchantIndex number

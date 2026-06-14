@@ -3,17 +3,99 @@
 
     <Include file="ItemEntry.lua"/>
 
-    <Frame name="SimscraftShoppingListItemEntryTemplate" mixin="SimscraftShoppingListItemEntryMixin">
-        <Size x="400" y="500"/>
-        <Anchors>
-            <Anchor point="CENTER"/>
-        </Anchors>
+    <Frame name="SimscraftShoppingListItemEntryTemplate" mixin="SimscraftShoppingListItemEntryMixin" virtual="true">
+        <Size y="100"/>
 
         <Frames>
+			<Button parentKey="UpButton">
+				<Size x="16" y="16" />
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativePoint="LEFT" x="15" y="10"/>
+				</Anchors>
+				<NormalTexture atlas="housing-floor-arrow-up-default" setAllPoints="true"/>
+				<PushedTexture atlas="housing-floor-arrow-up-pressed" setAllPoints="true"/>
+				<DisabledTexture atlas="housing-floor-arrow-up-disabled" setAllPoints="true"/>
+				<HighlightTexture atlas="housing-floor-arrow-up-default" setAllPoints="true" alphaMode="ADD"/>
+			</Button>
+
+			<Button parentKey="DownButton">
+				<Size x="16" y="16" />
+				<Anchors>
+					<Anchor point="TOPLEFT" relativePoint="LEFT" x="15" y="-10"/>
+				</Anchors>
+				<NormalTexture atlas="housing-floor-arrow-down-default" setAllPoints="true"/>
+				<PushedTexture atlas="housing-floor-arrow-down-pressed" setAllPoints="true"/>
+				<DisabledTexture atlas="housing-floor-arrow-down-disabled" setAllPoints="true"/>
+				<HighlightTexture atlas="housing-floor-arrow-down-default" setAllPoints="true" alphaMode="ADD"/>
+			</Button>
+
+			<Button parentKey="ItemButton">
+				<Size x="50" y="50"/>
+				<Anchors>
+					<Anchor point="LEFT" x="40"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture parentKey="Icon" setAllPoints="true"/>
+					</Layer>
+				</Layers>
+			</Button>
+
+			<Button parentKey="DeleteButton" inherits="UIButtonTemplate">
+				<Size x="25" y="25"/>
+				<Anchors>
+					<Anchor point="RIGHT" x="-20"/>
+				</Anchors>
+				<KeyValues>
+					<KeyValue key="buttonArtKit" value="128-RedButton-Delete" type="string" />
+					<KeyValue key="tooltipText" value="DELETE" type="global"/>
+					<KeyValue key="tooltipTextColor" value="HIGHLIGHT_FONT_COLOR" type="global"/>
+					<KeyValue key="tooltipAnchor" value="ANCHOR_TOP" type="string"/>
+				</KeyValues>
+			</Button>
         </Frames>
+
+		<Layers>
+			<Layer level="HIGHLIGHT">
+				<Texture parentKey="Highlight" atlas="housing-basic-panel-gradient-header-bg">
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT" y="3"/>
+					</Anchors>
+				</Texture>
+				<Texture parentKey="HighlightBorder" atlas="TalkingHeads-Glow-TextSheen" setAllPoints="true" alpha="0.15"/>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString parentKey="Name" font="GameFontWhite" text="Item name goes here">
+					<Anchors>
+						<Anchor point="LEFT" relativeKey="$parent.ItemButton" relativePoint="RIGHT" x="10" />
+					</Anchors>
+				</FontString>
+				<FontString parentKey="QuantityText" font="GameFontWhite" text="QUANTITY" justifyH="RIGHT" justifyV="MIDDLE">
+					<Anchors>
+						<Anchor point="RIGHT" relativeKey="$parent.DeleteButton" relativePoint="LEFT" x="-10"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Background" atlas="TalkingHeads-TextBackground" setAllPoints="true"/>
+				<Texture parentKey="FocusedBackground" atlas="TalkingHeads-Housing-TextBackground" setAllPoints="true" alpha="0"/>
+			</Layer>
+		</Layers>
+
+		<Animations>
+			<AnimationGroup parentKey="FadeIn" looping="NONE" setToFinalAlpha="true">
+				<Alpha parentKey="Alpha" duration="0.75" fromAlpha="0" toAlpha="1" smoothing="IN"/>
+			</AnimationGroup>
+			<AnimationGroup parentKey="FadeOut" looping="NONE" setToFinalAlpha="true">
+				<Alpha parentKey="Alpha" duration="0.75" fromAlpha="1" toAlpha="0" smoothing="OUT"/>
+			</AnimationGroup>
+		</Animations>
 
         <Scripts>
             <OnLoad method="OnLoad"/>
+			<OnEnter method="OnEnter"/>
+			<OnLeave method="OnLeave"/>
         </Scripts>
     </Frame>
 </Ui>

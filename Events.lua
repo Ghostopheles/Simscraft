@@ -1,15 +1,11 @@
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
----@class SimscraftAutoBuy
-internal.AutoBuy = {};
-
-function internal.AutoBuy.GetShoppingCartFrame()
-    return SimscraftShoppingCartFrame;
-end
-
----@enum SimscraftAutoBuyEvents
+---@enum SimscraftEvents
 local Events = {
+	SETTING_CHANGED = "SETTING_CHANGED",
+	HOUSE_EDITOR_MODE_CHANGED = "HOUSE_EDITOR_MODE_CHANGED",
+	MODIFIER_STATE_CHANGED = "MODIFIER_STATE_CHANGED",
     CART_ADD_ITEM_BY_INDEX = "CART_ADD_ITEM_BY_INDEX",
     CART_REMOVE_ITEM_BY_INDEX = "CART_REMOVE_ITEM_BY_INDEX",
     CART_UPDATE_QUANTITY_BY_INDEX = "CART_UPDATE_QUANTITY_BY_INDEX",
@@ -30,22 +26,46 @@ local Events = {
     NEW_HOUSING_ITEM_ACQUIRED = "NEW_HOUSING_ITEM_ACQUIRED",
     ZONE_CHANGED = "ZONE_CHANGED",
     ZONE_CHANGED_NEW_AREA = "ZONE_CHANGED_NEW_AREA",
+	SHOPPING_LIST_SHOW = "SHOPPING_LIST_SHOW",
+	SHOPPING_LIST_ADDED = "SHOPPING_LIST_ADDED",
+	SHOPPING_LIST_REMOVED = "SHOPPING_LIST_REMOVED",
+	SHOPPING_LIST_MOVE_ITEM = "SHOPPING_LIST_MOVE_ITEM",
+	SHOPPING_LIST_DELETE_ITEM = "SHOPPING_LIST_DELETE_ITEM"
 };
 
----@class SimscraftAutoBuyEventRegistry : CallbackRegistryMixin
+---@class SimscraftEventRegistry : CallbackRegistryMixin
 local Registry = CreateFromMixins(CallbackRegistryMixin);
 Registry:OnLoad();
 Registry:GenerateCallbackEvents(GetKeysArray(Events));
 
-local function OnCartVisibiltyToggled()
-    Registry:TriggerEvent(Events.CART_FRAME_VISIBILITY_CHANGED, SimscraftShoppingCartFrame:IsShown());
+internal.Events = Events;
+internal.Registry = Registry;
+
+local f = CreateFrame("Frame");
+f:RegisterEvent("HOUSE_EDITOR_MODE_CHANGED");
+f:RegisterEvent("MODIFIER_STATE_CHANGED");
+f:SetScript("OnEvent", function(self, event, ...)
+    if event == "HOUSE_EDITOR_MODE_CHANGED" then
+        Registry:TriggerEvent(Events.HOUSE_EDITOR_MODE_CHANGED, ...);
+    elseif event == "MODIFIER_STATE_CHANGED" then
+        Registry:TriggerEvent(Events.HOUSE_EDITOR_MODE_CHANGED, ...);
+    end
+end);
+
+---@param event SimscraftEvents
+---@param callback function
+---@param owner any
+function internal.RegisterCallback(event, callback, owner)
+    assert(callback, "A callback function is required.");
+    if not owner then
+        local newCallback = function(_, ...)
+            callback(...);
+        end
+        Registry:RegisterCallback(event, newCallback, owner);
+    else
+        Registry:RegisterCallback(event, callback, owner);
+    end
 end
-
-Registry:RegisterCallback(Events.CART_FRAME_SHOW, OnCartVisibiltyToggled);
-Registry:RegisterCallback(Events.CART_FRAME_HIDE, OnCartVisibiltyToggled);
-
-internal.AutoBuy.Events = Events;
-internal.AutoBuy.Registry = Registry;
 
 ------------
 

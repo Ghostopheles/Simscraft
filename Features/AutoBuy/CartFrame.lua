@@ -3,12 +3,9 @@ local addonName = ...;
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
----@class SimscraftAutoBuy
-local AutoBuy = internal.AutoBuy;
-
-local Events = AutoBuy.Events;
-local Registry = AutoBuy.Registry;
-local Cart = AutoBuy.Cart;
+local Events = internal.Events;
+local Registry = internal.Registry;
+local Cart = internal.Cart;
 
 ------------
 

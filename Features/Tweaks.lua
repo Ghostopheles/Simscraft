@@ -27,4 +27,4 @@ local function OnModifierStateChanged(key, down)
 end
 
 local Events = internal.Events;
-internal.RegisterCallback(Events.ModifierStateChanged, OnModifierStateChanged);
+internal.RegisterCallback(Events.MODIFIER_STATE_CHANGED, OnModifierStateChanged);

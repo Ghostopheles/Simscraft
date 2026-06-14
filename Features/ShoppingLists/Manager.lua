@@ -1,6 +1,9 @@
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
+local Events = internal.Events;
+local Registry = internal.Registry;
+
 ---@class SimscraftShoppingListManager
 local Manager = {};
 internal.ShoppingListManager = Manager;
@@ -17,6 +20,7 @@ function Manager:AddShoppingList(name, shoppingList)
     end
 
     SimscraftShoppingLists[name] = shoppingList;
+	Registry:TriggerEvent(Events.SHOPPING_LIST_ADDED, shoppingList);
 end
 
 function Manager:RemoveShoppingList(name)
@@ -25,6 +29,13 @@ end
 
 function Manager:GetShoppingLists()
     return SimscraftShoppingLists;
+end
+
+function Manager:ShowShoppingList(name)
+	local list = SimscraftShoppingLists[name];
+	if name then
+		Registry:TriggerEvent(Events.SHOPPING_LIST_SHOW, list);
+	end
 end
 
 ------------

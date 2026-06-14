@@ -119,4 +119,4 @@ local function OnHouseEditorModeChanged(newMode)
 end
 
 local Events = internal.Events;
-internal.RegisterCallback(Events.HouseEditorModeChanged, OnHouseEditorModeChanged);
+internal.RegisterCallback(Events.HOUSE_EDITOR_MODE_CHANGED, OnHouseEditorModeChanged);

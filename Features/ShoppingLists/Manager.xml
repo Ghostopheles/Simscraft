@@ -3,7 +3,7 @@
 
     <Include file="Manager.lua"/>
 
-    <Frame name="SimscraftShoppingListManagerFrame" parent="UIParent" inherits="PortraitFrameFlatTemplate" mixin="SimscraftShoppingListManagerFrameMixin">
+    <Frame name="SimscraftShoppingListManagerFrame" parent="UIParent" inherits="PortraitFrameFlatTemplate" mixin="SimscraftShoppingListManagerFrameMixin" hidden="true">
         <Size x="400" y="500"/>
         <Anchors>
             <Anchor point="CENTER"/>

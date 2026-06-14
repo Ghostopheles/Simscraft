@@ -38,7 +38,7 @@
 
 	<Frame name="SimscraftShoppingListFrameTemplate" mixin="SimscraftShoppingListFrameMixin" virtual="true">
 		<Frames>
-			<Frame parentKey="Header" useParentLevel="true">
+			<Frame parentKey="Header">
 				<Size y="50"/>
 				<Anchors>
 					<Anchor point="TOPLEFT"/>
@@ -51,9 +51,6 @@
 								<Anchor point="CENTER"/>
 							</Anchors>
 						</FontString>
-					</Layer>
-					<Layer level="BACKGROUND" textureSubLevel="1">
-						<Texture parentKey="Background" atlas="housing-basic-container-woodheader" setAllPoints="true"/>
 					</Layer>
 				</Layers>
 			</Frame>
@@ -91,6 +88,14 @@
 		</Frames>
 
 		<Layers>
+			<Layer level="BACKGROUND" textureSubLevel="1">
+				<Texture parentKey="HeaderBackground" atlas="housing-basic-container-woodheader">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Header"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Header"/>
+					</Anchors>
+				</Texture>
+			</Layer>
 			<Layer level="BACKGROUND">
 				<Texture parentKey="Background" atlas="catalog-list-preview-bg" setAllPoints="true"/>
 			</Layer>

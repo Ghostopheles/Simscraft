@@ -7,6 +7,9 @@ local internal = select(2, ...);
 ---@class SimscraftShoppingListManager
 local Manager = internal.ShoppingListManager;
 
+local Events = internal.Events;
+local Registry = internal.Registry;
+
 ------------
 
 local LIST_IMPORT_SUCCESS_SOUNDKIT = SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE;
@@ -17,12 +20,14 @@ local LIST_IMPORT_SUCCESS_SOUNDKIT = SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE
 ---@field RawList table<number, {ItemID: number, Quantity: number}[]> maps creatureID to list of itemIDs and quantities
 ---@field Vendors table<number, number[]> maps creatureID to list of itemIDs
 ---@field Items table<number, number> maps itemID to quantity
+---@field Name string Unique name
 local ShoppingListMixin = {};
 
-function ShoppingListMixin:Init(list)
+function ShoppingListMixin:Init(list, name)
     self.RawList = list;
     self.Vendors = {};
     self.Items = {};
+	self.Name = name;
 
     for cid, items in pairs(self.RawList) do
         local vendor = {};
@@ -99,7 +104,7 @@ end
 
 ---@param shoppingListStr string
 ---@return SimscraftShoppingListMixin
-local function ParseShoppingList(shoppingListStr)
+local function ParseShoppingList(shoppingListStr, name)
     local list = {};
 
     local split = strsplittable(";", shoppingListStr);
@@ -127,7 +132,7 @@ local function ParseShoppingList(shoppingListStr)
         end
     end
 
-    return CreateAndInitFromMixin(ShoppingListMixin, list);
+    return CreateAndInitFromMixin(ShoppingListMixin, list, name);
 end
 
 ------------
@@ -157,8 +162,8 @@ function SimscraftShoppingListImportFrameMixin:OnEditBoxEnterPressed()
 end
 
 function SimscraftShoppingListImportFrameMixin:Submit()
-    local list = ParseShoppingList(self.EditBox:GetText());
-    local name = "uwu";
+	local name = "uwu";
+    local list = ParseShoppingList(self.EditBox:GetText(), name);
     Manager:AddShoppingList(name, list);
     self:Hide();
     PlaySound(LIST_IMPORT_SUCCESS_SOUNDKIT);
@@ -171,14 +176,14 @@ SimscraftShoppingListFrameMixin = {};
 function SimscraftShoppingListFrameMixin:OnLoad()
 	local content = self.Content;
 	local anchorsWithScrollBar = {
-        CreateAnchor("TOPLEFT", self, "TOPLEFT"),
-        CreateAnchor("TOPRIGHT", self.ScrollBar, "TOPLEFT", -5, 0),
-        CreateAnchor("BOTTOM", self, "BOTTOM");
+        CreateAnchor("TOPLEFT", content, "TOPLEFT", 10, -5),
+        CreateAnchor("TOPRIGHT", content.ScrollBar, "TOPLEFT", -5, -5),
+        CreateAnchor("BOTTOM", content, "BOTTOM", 0, 5);
     };
 
     local anchorsWithoutScrollBar = {
         anchorsWithScrollBar[1],
-        CreateAnchor("TOPRIGHT", self, "TOPRIGHT", -5, -30),
+        CreateAnchor("TOPRIGHT", content, "TOPRIGHT", -5, -30),
         anchorsWithScrollBar[3],
     };
 
@@ -191,21 +196,54 @@ function SimscraftShoppingListFrameMixin:OnLoad()
     end
     content.ScrollView:SetElementInitializer("SimscraftShoppingListItemEntryTemplate", Initializer);
 
+	content.ScrollBar.canInterpolateScroll = true;
+	content.ScrollBox.canInterpolateScroll = true;
+
     ScrollUtil.InitScrollBoxListWithScrollBar(content.ScrollBox, content.ScrollBar, content.ScrollView);
 
-	--TODO: remove this
-	Datamine.Unified.AddBackgroundToFrame(self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, self.OnShoppingListAdded, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_SHOW, self.OnShoppingListShow, self);
 
+	self.ActiveList = nil;
+end
 
+function SimscraftShoppingListFrameMixin:OnShoppingListAdded(list)
+	if not self.ActiveList and self:IsShown() then
+		self:OnShoppingListShow(list);
+	end
+end
+
+function SimscraftShoppingListFrameMixin:OnShoppingListShow(list)
+	self.ActiveList = list.Name;
+	self:SetTitle(list.Name);
+	self.DataProvider = nil;
+	self:AddItems(list.Items);
 end
 
 function SimscraftShoppingListFrameMixin:SetTitle(title)
 	self.Header.Title:SetText(title);
 end
 
+function SimscraftShoppingListFrameMixin:AddItems(items)
+	if not self.DataProvider then
+		self.DataProvider = CreateDataProvider();
+		self.Content.ScrollView:SetDataProvider(self.DataProvider);
+	end
+
+	for itemID, quantity in pairs(items) do
+		self.DataProvider:Insert({
+			ItemID = itemID,
+			Quantity = quantity
+		});
+	end
+end
+
 ------------
 
 function ahwi()
+	SimscraftShoppingLists = {};
+	SimscraftShoppingListImportFrame:Show();
+	SimscraftShoppingListImportFrame.EditBox:SetText("49877:248939-2;248525:254402-1;249684:251473-2;252043:253251-1;252916:253704-4;255203,255325:235677-1,245383-12;255213,255326:246104-2;256828,261231,261262:264280-2,264396-13");
 	local f = CreateFrame("Frame", "TestList", UIParent, "SimscraftShoppingListFrameTemplate");
 	f:SetPoint("CENTER");
 	f:SetSize(400, 500);
