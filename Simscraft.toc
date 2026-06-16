@@ -1,4 +1,4 @@
-## Interface: 120005
+## Interface: 120007
 ## Title: |cffa6e329Simscraft|r
 ## Notes: Augments your housing experience with the highest-quality housing helpers.
 ## Author: Ghostopheles
@@ -32,7 +32,7 @@ ColorUtil.lua
 MusicDefinitions.lua
 Music.lua
 
-Features/ShoppingLists/ShoppingList.xml
+#Features/ShoppingLists/ShoppingList.xml
 Features/AutoBuy/AutoBuy.xml
 Features/Tweaks.lua
 Features/DyeWheel/DyeWheel.xml
