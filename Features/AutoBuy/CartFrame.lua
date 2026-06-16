@@ -17,11 +17,14 @@ end
 
 ------------
 
+local CART_FRAME_SIZE_X = 350;
+local CART_FRAME_SIZE_Y = 400;
+
 local ShoppingCartFrame = CreateFrame("Frame", "SimscraftShoppingCartFrame", MerchantFrame, "PortraitFrameFlatTemplate");
 ButtonFrameTemplate_HidePortrait(ShoppingCartFrame);
 ShoppingCartFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 10, 0);
 ShoppingCartFrame:SetTitle(internal.ThemeColor:WrapTextInColorCode(addonName) .. " Shopping Cart");
-ShoppingCartFrame:SetSize(350, 400);
+ShoppingCartFrame:SetSize(CART_FRAME_SIZE_X, CART_FRAME_SIZE_Y);
 ShoppingCartFrame:SetScript("OnShow", function()
     Registry:TriggerEvent(Events.CART_FRAME_SHOW);
 end);
@@ -57,6 +60,7 @@ ClearCartButton.tooltipText = PERKS_PROGRAM_CART_CLEAR_TOOLTIP;
 PurchaseButton:SetPoint("LEFT", ClearCartButton, "RIGHT", 10, 0);
 
 local HelpText = ShoppingCartFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite");
+HelpText:SetWidth(CART_FRAME_SIZE_X - 25);
 HelpText:SetPoint("CENTER", 0, 15);
 HelpText:SetJustifyH("CENTER");
 HelpText:SetJustifyV("MIDDLE");

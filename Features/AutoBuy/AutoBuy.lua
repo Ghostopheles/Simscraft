@@ -12,6 +12,7 @@ local internal = select(2, ...);
 
 ---@class SimscraftAutoBuy
 local AutoBuy = {};
+internal.AutoBuy = AutoBuy;
 
 local Events = internal.Events;
 local Registry = internal.Registry;

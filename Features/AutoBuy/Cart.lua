@@ -1,9 +1,6 @@
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
----@class SimscraftAutoBuy
-local AutoBuy = internal.AutoBuy;
-
 local Events = internal.Events;
 local Registry = internal.Registry;
 
@@ -17,7 +14,7 @@ local PURCHASE_COMPLETION_SOUNDKIT = SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE
 ------------
 
 local function GetScrollBox()
-    local f = AutoBuy.GetShoppingCartFrame();
+    local f = internal.AutoBuy.GetShoppingCartFrame();
     return f.ScrollBox;
 end
 

@@ -1,9 +1,6 @@
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
----@class SimscraftAutoBuy
-local AutoBuy = internal.AutoBuy;
-
 ------------
 
 SimscraftShoppingCartEntryItemButtonMixin = CreateFromMixins(ItemButtonMixin);
