@@ -146,6 +146,19 @@ Registry:RegisterCallback(Events.MERCHANT_CLOSED, OnMerchantClosed);
 
 ------ tooltip hint
 
+local function GetAddToCartKeybindString()
+	local modifier = internal.Settings.GetSetting(internal.Setting.AddToCartModifier);
+	local firstCharacter = strsub(modifier, 1, 1);
+	local rest = strsub(modifier, 2);
+	local modifierString = firstCharacter:upper() .. rest:lower();
+	local color = YELLOW_FONT_COLOR;
+	modifierString = format("[%s+Right-Click]", modifierString);
+	modifierString = color:WrapTextInColorCode(modifierString);
+
+	local themeColor = internal.ThemeColor;
+	return themeColor:WrapTextInColorCode(modifierString .. " to add this item to your cart");
+end
+
 local function OnTooltipSetItem(tooltip)
     if not C_PlayerInteractionManager.IsInteractingWithNpcOfType(Enum.PlayerInteractionType.Merchant) then
         return;
@@ -154,7 +167,7 @@ local function OnTooltipSetItem(tooltip)
     if tooltip.GetItem then
         local itemID = select(3, tooltip:GetItem());
         if itemID and C_Item.IsDecorItem(itemID) then
-            local text = internal.ThemeColor:WrapTextInColorCode(WARDROBE_SHORTCUTS_TUTORIAL_2 .. " to add this item to your cart");
+            local text = GetAddToCartKeybindString();
             tooltip:AddLine(text);
         end
     end
