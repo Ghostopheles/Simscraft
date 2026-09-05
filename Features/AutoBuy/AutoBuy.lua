@@ -1,11 +1,6 @@
 -- TODO: add on OnTabPressed handler to the entries to enable tabbing down the list via the editboxes
 -- TODO: add an OnEscapePressed handler to the cart items edit box
 -- TODO: maybe enable hyperlinks on the item labels?
--- TODO: maybe auto-focus the edit box when adding an item to the cart
--- TODO: can't ctrl-click allegedly???
--- TODO: fix clipping issues on the 'total owned' string
--- TODO: correctly check if the player can afford using currencies other than gold
--- TODO: calculate free bag space for refundable items
 
 ---@class SimscraftInternal
 local internal = select(2, ...);
