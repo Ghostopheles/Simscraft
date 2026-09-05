@@ -1,7 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 
-    <Include file="Manager.xml"/>
 	<Include file="ItemEntry.xml"/>
     <Include file="ShoppingList.lua"/>
 
@@ -108,4 +107,6 @@
 			<OnLoad method="OnLoad"/>
 		</Scripts>
 	</Frame>
+
+	<Include file="Manager.xml"/>
 </Ui>

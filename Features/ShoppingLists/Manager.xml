@@ -2,24 +2,79 @@
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 
     <Include file="Manager.lua"/>
+	<Include file="ManagerListEntry.xml"/>
 
-    <Frame name="SimscraftShoppingListManagerFrame" parent="UIParent" inherits="PortraitFrameFlatTemplate" mixin="SimscraftShoppingListManagerFrameMixin" hidden="true">
-        <Size x="400" y="500"/>
+    <Frame name="SimscraftShoppingListManagerFrame" parent="UIParent" mixin="SimscraftShoppingListManagerFrameMixin">
+        <Size x="800" y="600"/>
         <Anchors>
             <Anchor point="CENTER"/>
         </Anchors>
-        <Frames>
-            <Frame parentKey="ScrollBox" inherits="WowScrollBoxList"/>
-            <EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar">
-                <Anchors>
-                    <Anchor point="TOPRIGHT" x="-10" y="-10"/>
-                    <Anchor point="BOTTOMRIGHT" x="-10" y="10"/>
-                </Anchors>
-            </EventFrame>
+
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Background" atlas="housing-basic-panel--stone-background" setAllPoints="true"/>
+				<Texture parentKey="ListBackground" atlas="housing-bulletinboard-list-bg" setAllPoints="true"/>
+				<Texture parentKey="HeaderBackground" atlas="housing-basic-panel-footer">
+					<Size y="54"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="TOPRIGHT"/>
+					</Anchors>
+				</Texture>
+				<Texture parentKey="ImportBackground" atlas="housing-wood-frame-basic-background"/>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="ContentBorder" atlas="housing-simple-wood-frame"/>
+				<Texture parentKey="Border" atlas="housing-wood-frame" setAllPoints="true"/>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString parentKey="HeaderText" font="GameFontNormalHuge" justifyH="CENTER"/>
+			</Layer>
+		</Layers>
+
+		<Frames>
+			<Frame parentKey="Content">
+				<Size x="350"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.HeaderBackground" relativePoint="BOTTOMLEFT"/>
+					<Anchor point="BOTTOMLEFT" y="75"/>
+				</Anchors>
+
+				<Frames>
+					<Frame parentKey="ScrollBox" inherits="WowScrollBoxList"/>
+					<EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar">
+						<Anchors>
+							<Anchor point="TOPRIGHT" x="-10" y="-10"/>
+							<Anchor point="BOTTOMRIGHT" x="-10" y="10"/>
+						</Anchors>
+					</EventFrame>
+				</Frames>
+			</Frame>
+
+			<Button parentKey="ImportButton" inherits="SharedGoldRedButtonLargeTemplate">
+				<Size x="250" y="65"/>
+				<Anchors>
+					<Anchor point="TOP" relativeKey="$parent.Content" relativePoint="BOTTOM"/>
+				</Anchors>
+
+				<Scripts>
+					<OnClick>
+						CallMethodOnNearestAncestor(self, "OnImportButtonClicked");
+					</OnClick>
+				</Scripts>
+			</Button>
+
+			<Frame parentKey="ShoppingList" inherits="SimscraftShoppingListFrameTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.Content" relativePoint="TOPRIGHT"/>
+					<Anchor point="BOTTOMRIGHT"/>
+				</Anchors>
+			</Frame>
         </Frames>
 
         <Scripts>
             <OnLoad method="OnLoad"/>
+			<OnShow method="OnShow"/>
         </Scripts>
     </Frame>
 </Ui>

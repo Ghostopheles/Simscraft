@@ -4,9 +4,6 @@
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
----@class SimscraftShoppingListManager
-local Manager = internal.ShoppingListManager;
-
 local Events = internal.Events;
 local Registry = internal.Registry;
 
@@ -162,9 +159,9 @@ function SimscraftShoppingListImportFrameMixin:OnEditBoxEnterPressed()
 end
 
 function SimscraftShoppingListImportFrameMixin:Submit()
-	local name = "uwu";
+	local name = "test list";
     local list = ParseShoppingList(self.EditBox:GetText(), name);
-    Manager:AddShoppingList(name, list);
+    internal.ShoppingListManager:AddShoppingList(name, list);
     self:Hide();
     PlaySound(LIST_IMPORT_SUCCESS_SOUNDKIT);
 end
@@ -236,15 +233,4 @@ function SimscraftShoppingListFrameMixin:AddItems(items)
 			Quantity = quantity
 		});
 	end
-end
-
-------------
-
-function ahwi()
-	SimscraftShoppingLists = {};
-	SimscraftShoppingListImportFrame:Show();
-	SimscraftShoppingListImportFrame.EditBox:SetText("49877:248939-2;248525:254402-1;249684:251473-2;252043:253251-1;252916:253704-4;255203,255325:235677-1,245383-12;255213,255326:246104-2;256828,261231,261262:264280-2,264396-13");
-	local f = CreateFrame("Frame", "TestList", UIParent, "SimscraftShoppingListFrameTemplate");
-	f:SetPoint("CENTER");
-	f:SetSize(400, 500);
 end
