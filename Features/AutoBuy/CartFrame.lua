@@ -174,18 +174,23 @@ ScrollView:SetDataProvider(DataProvider);
 
 local ErrorText = ShoppingCartFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite");
 ErrorText:SetPoint("TOP", ScrollBox, "BOTTOM", 0, 7);
-ErrorText:SetText(RED_FONT_COLOR:WrapTextInColorCode(ERR_NOT_ENOUGH_MONEY));
+ErrorText:SetWidth(ShoppingCartFrame:GetWidth() - 10);
+ErrorText:SetMaxLines(1);
+
+local function ShouldShowTruncatedTooltip()
+	-- minor hack to update tooltip text whenever we mouseover, since updating it any other way requires effort
+	ErrorText.tooltipText = ErrorText:GetText();
+	return ErrorText:IsTruncated();
+end
+internal.AddTooltip(ErrorText, nil, ShouldShowTruncatedTooltip);
+
 ErrorText:Hide();
 
 ------------
 
 ScrollView:RegisterCallback("OnDataChanged", function()
-    Registry:TriggerEvent(Events.CART_REFRESH);
+    Cart.Refresh();
 end);
-
----@class SimscraftAutoBuyUI
-local UI = {};
-
 
 ------------
 
@@ -231,10 +236,13 @@ Registry:RegisterCallback(Events.CART_FRAME_CLOSE_BUTTON_CLICKED, OnShoppingCart
 
 local function RefreshButtonsAndTexts()
     local hasItemsInCart = DataProvider:GetSize() > 0;
-    local canAfford = Cart.CanPlayerAffordPurchase();
+	local hasPurchaseErrors = Cart.HasPurchaseErrors();
 
-    PurchaseButton:SetEnabled(hasItemsInCart and canAfford);
-    ErrorText:SetShown(hasItemsInCart and not canAfford);
+    PurchaseButton:SetEnabled(hasItemsInCart and not hasPurchaseErrors);
+    ErrorText:SetShown(hasPurchaseErrors);
+
+	local purchaseErrorString = Cart.GetPurchaseErrorString();
+	ErrorText:SetText(RED_FONT_COLOR:WrapTextInColorCode(purchaseErrorString));
 
     local purchaseText;
     if hasItemsInCart then

@@ -11,8 +11,11 @@ function internal.Print(msg)
     print(prefix .. msg);
 end
 
-function internal.AddTooltip(object, anchor)
+function internal.AddTooltip(object, anchor, gateFunc)
     object:HookScript("OnEnter", function()
+		if gateFunc and (not gateFunc()) then
+			return;
+		end
         if object.tooltipText then
             GameTooltip:SetOwner(object, anchor or "ANCHOR_TOPLEFT");
             GameTooltip:SetText(object.tooltipText);

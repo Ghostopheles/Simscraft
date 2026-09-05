@@ -3,6 +3,7 @@ local internal = select(2, ...);
 
 local Events = internal.Events;
 local Registry = internal.Registry;
+local Enums = internal.Enums;
 
 ------------
 
@@ -10,6 +11,48 @@ local ASYNC_PURCHASE_STEP = 0.75; -- in seconds
 local MAX_PURCHASE_ACTIONS_PER_TICK = 5;
 local HIGH_COST_THRESHOLD = 25000000; -- 2,500 gold
 local PURCHASE_COMPLETION_SOUNDKIT = SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE;
+local PURCHASE_ERRORS = {};
+local PURCHASE_ERROR_MISSING_AMOUNT_COLOR = TUTORIAL_FONT_COLOR;
+local BAG_INDICES = {
+	Enum.BagIndex.Backpack,
+	Enum.BagIndex.Bag_1,
+	Enum.BagIndex.Bag_2,
+	Enum.BagIndex.Bag_3,
+	Enum.BagIndex.Bag_4,
+};
+
+------------
+
+local MONEY_FORMATTER_CONFIG = MoneyFormatterUtil.CreateFormatterConfig();
+MONEY_FORMATTER_CONFIG:SetDisplayMode(MoneyFormatterDisplayMode.Texture);
+MONEY_FORMATTER_CONFIG:SetZeroDisplayMode(MoneyFormatterZeroDisplayMode.Collapse);
+MONEY_FORMATTER_CONFIG:SetValueFormatter(MoneyFormatterUtil.BreakUpLargeNumbers);
+
+local function FormatMoney(money)
+	return MoneyFormatterUtil.FormatMoney(money, MONEY_FORMATTER_CONFIG);
+end
+
+------------
+
+---@class SimscraftPurchaseError
+---@field ErrorType SimscraftPurchaseErrorType
+---@field Currency? string link or name
+---@field Texture? number
+---@field MissingAmount number
+
+---@param errType SimscraftPurchaseErrorType
+---@param currency? string
+---@param texture? number
+---@param missingAmount number
+---@return SimscraftPurchaseError
+local function MakePurchaseError(errType, currency, texture, missingAmount)
+	return {
+		ErrorType = errType,
+		Currency = currency,
+		Texture = texture,
+		MissingAmount = missingAmount
+	};
+end
 
 ------------
 
@@ -36,6 +79,7 @@ function Cart.Flush()
 end
 
 function Cart.Refresh()
+	Cart.CalculateTotalCartPrice();
     Registry:TriggerEvent(Events.CART_REFRESH);
 end
 
@@ -131,6 +175,31 @@ function Cart.GetCostForItemEntry(itemEntry, stackCost)
     return fullGoldCost, extendedCost;
 end
 
+function Cart.GetFreeBagSpace()
+	local freeSlots = 0;
+	for _, bagIndex in ipairs(BAG_INDICES) do
+		local numFreeSlots, bagFamily = C_Container.GetContainerNumFreeSlots(bagIndex);
+		if bagFamily == 0 then
+			freeSlots = freeSlots + numFreeSlots;
+		end
+	end
+
+	return freeSlots;
+end
+
+function Cart.CalculateRequiredBagSpace()
+	local dataProvider = GetDataProvider();
+	local requiredBagSlots = 0;
+	dataProvider:ReverseForEach(function(itemEntry)
+		local itemID = GetMerchantItemID(itemEntry.Index);
+		local maxStackSize = select(8, C_Item.GetItemInfo(itemID));
+		local requiredSlots = Round(itemEntry.Quantity / maxStackSize);
+		requiredBagSlots = requiredBagSlots + requiredSlots;
+	end);
+
+	return requiredBagSlots;
+end
+
 function Cart.CalculateTotalCartPrice()
     local dataProvider = GetDataProvider();
     local totalCost = 0;
@@ -149,6 +218,7 @@ function Cart.CalculateTotalCartPrice()
         end
     end);
 
+	Cart.UpdatePurchaseErrors(totalCost, totalExtendedCost);
     return totalCost, totalExtendedCost;
 end
 
@@ -267,9 +337,102 @@ function Cart.StopAsyncPurchase()
     Registry:TriggerEvent(Events.CART_END_PURCHASE, false);
 end
 
+---@return SimscraftPurchaseError[]
+function Cart.GetPurchaseErrors()
+	return PURCHASE_ERRORS;
+end
+
+function Cart.HasPurchaseErrors()
+	return #PURCHASE_ERRORS > 0;
+end
+
+---@param purchaseError SimscraftPurchaseError
+function Cart.AppendPurchaseError(purchaseError)
+	tinsert(PURCHASE_ERRORS, purchaseError);
+end
+
+function Cart.UpdatePurchaseErrors(totalCost, totalExtendedCost)
+	PURCHASE_ERRORS = {};
+
+	local totalMoney = GetMoney();
+    local hasEnoughGold = totalCost <= totalMoney;
+	if not hasEnoughGold then
+		local err = MakePurchaseError(
+			Enums.PURCHASE_ERROR_TYPE.MISSING_GOLD, nil, nil,
+			totalCost - totalMoney
+		);
+		Cart.AppendPurchaseError(err);
+	end
+
+	local hasEnoughExtendedCurrency = true;
+	for texture, extendedCost in pairs(totalExtendedCost) do
+		local playerCurrencyAmount = Cart.GetPlayerCurrencyAmount(extendedCost.ItemLink);
+		if playerCurrencyAmount < extendedCost.Amount then
+			hasEnoughExtendedCurrency = false;
+			local err = MakePurchaseError(
+				Enums.PURCHASE_ERROR_TYPE.MISSING_CURRENCY,
+				extendedCost.ItemLink,
+				texture,
+				extendedCost.Amount - playerCurrencyAmount
+			);
+			Cart.AppendPurchaseError(err);
+		end
+	end
+
+	local requiredBagSpace = Cart.CalculateRequiredBagSpace();
+	local freeBagSpace = Cart.GetFreeBagSpace();
+	if requiredBagSpace > freeBagSpace then
+		local err = MakePurchaseError(
+			Enums.PURCHASE_ERROR_TYPE.MISSING_BAG_SPACE, nil, nil,
+			requiredBagSpace - freeBagSpace
+		);
+		Cart.AppendPurchaseError(err);
+	end
+end
+
+local function FormatGoldString(amount)
+
+end
+
+function Cart.GetPurchaseErrorString()
+	local errs = Cart.GetPurchaseErrors();
+	if #errs == 0 then
+		return "";
+	end
+
+	local errString = "Missing ";
+	for i, err in ipairs(errs) do
+		local str;
+		if err.ErrorType == Enums.PURCHASE_ERROR_TYPE.MISSING_GOLD then
+			str = FormatMoney(err.MissingAmount);
+			str = PURCHASE_ERROR_MISSING_AMOUNT_COLOR:WrapTextInColorCode(str);
+		elseif err.ErrorType == Enums.PURCHASE_ERROR_TYPE.MISSING_CURRENCY then
+			local amount = BreakUpLargeNumbers(err.MissingAmount);
+			amount = PURCHASE_ERROR_MISSING_AMOUNT_COLOR:WrapTextInColorCode(amount);
+			str = format("%s |T%d:0|t", amount, err.Texture);
+		elseif err.ErrorType == Enums.PURCHASE_ERROR_TYPE.MISSING_BAG_SPACE then
+			local amount = BreakUpLargeNumbers(err.MissingAmount);
+			amount = PURCHASE_ERROR_MISSING_AMOUNT_COLOR:WrapTextInColorCode(amount);
+			str = format("%s bag slots", amount);
+		end
+
+		if i > 1 then
+			errString = errString .. " & ";
+		end
+
+		errString = errString .. str;
+	end
+
+	return errString .. ".";
+end
+
+function Cart.GetPlayerCurrencyAmount(currencyLink)
+	local currencyInfo = C_CurrencyInfo.GetCurrencyInfoFromLink(currencyLink);
+	return currencyInfo.quantity;
+end
+
 function Cart.CanPlayerAffordPurchase()
-    local totalCost = Cart.CalculateTotalCartPrice();
-    return totalCost <= GetMoney();
+	return not Cart.HasPurchaseErrors();
 end
 
 function Cart.GenerateCostString(itemEntry)
