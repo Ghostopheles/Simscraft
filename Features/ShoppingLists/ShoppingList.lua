@@ -176,8 +176,13 @@ function SimscraftShoppingListFrameMixin:OnShoppingListRenamed(oldName, newName)
 end
 
 function SimscraftShoppingListFrameMixin:RefreshItems(items)
+	local scrollPercentage = self.Content.ScrollBox:CalculateScrollPercentage();
+
 	self.DataProvider = nil;
 	self:AddItems(items);
+
+	local noInterpolation = true;
+	self.Content.ScrollBox:SetScrollPercentage(scrollPercentage, noInterpolation);
 end
 
 function SimscraftShoppingListFrameMixin:SetTitle(title)
