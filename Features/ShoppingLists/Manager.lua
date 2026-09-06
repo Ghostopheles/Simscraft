@@ -253,8 +253,11 @@ function SimscraftShoppingListManagerFrameMixin:Populate(lists)
 
 	local lists = lists or Manager:GetShoppingLists();
 	for name, list in pairs(lists) do
+		local keys = GetKeysArray(list.Items);
 		self.DataProvider:Insert({
-			Name = name
+			Name = name,
+			UniqueItems = #keys,
+			ImportedAt = list.ImportedAt,
 		});
 	end
 

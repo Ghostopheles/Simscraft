@@ -15,6 +15,18 @@
 						<Anchor point="LEFT" x="10"/>
 					</Anchors>
 				</FontString>
+
+				<FontString parentKey="SizeText" font="GameFontWhite" justifyH="RIGHT" maxLines="1">
+					<Anchors>
+						<Anchor point="RIGHT" x="-55" y="7"/>
+					</Anchors>
+				</FontString>
+
+				<FontString parentKey="DateText" font="GameFontWhite" justifyH="RIGHT" maxLines="1" text="CHINA">
+					<Anchors>
+						<Anchor point="RIGHT" x="-55" y="-7"/>
+					</Anchors>
+				</FontString>
 			</Layer>
 			<Layer level="HIGHLIGHT">
 				<Texture parentKey="Highlight" atlas="housing-basic-panel-gradient-header-bg">

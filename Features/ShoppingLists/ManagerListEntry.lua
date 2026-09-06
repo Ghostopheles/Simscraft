@@ -12,12 +12,17 @@ function SimscraftShoppingListManagerListEntryMixin:OnLoad()
 	self.DeleteButton:SetScript("OnClick", function()
 		self:OnDeleteButtonPressed();
 	end);
+
+	self.NameText:SetTextScale(1.2);
 end
 
 function SimscraftShoppingListManagerListEntryMixin:Init(data)
 	local name = data.Name;
 	self.NameText:SetText(name);
 	self.Name = name;
+
+	self.SizeText:SetFormattedText("%d unique items", data.UniqueItems);
+	self.DateText:SetFormattedText("Imported on %s", data.ImportedAt);
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnEnter()

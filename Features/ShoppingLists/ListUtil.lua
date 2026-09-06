@@ -6,11 +6,19 @@ local Registry = internal.Registry;
 
 ------------
 
+local function GetCurrentDate()
+	local format = "%m/%d/%y";
+	return date(format);
+end
+
+------------
+
 ---@class SimscraftShoppingList
 ---@field RawList table<number, {ItemID: number, Quantity: number}[]> maps creatureID to list of itemIDs and quantities
 ---@field Vendors table<number, number[]> maps creatureID to list of itemIDs
 ---@field Items table<number, number> maps itemID to quantity
 ---@field Name string Unique name
+---@field ImportedAt string Date in which the list was first imported
 
 ---@class SimscraftShoppingListUtil
 local ShoppingListUtil = {};
@@ -49,7 +57,8 @@ function ShoppingListUtil.ParseShoppingListImport(shoppingListStr, name)
 		RawList = list,
 		Vendors = {},
 		Items = {},
-		Name = name
+		Name = name,
+		ImportedAt = GetCurrentDate(),
 	};
 	ShoppingListUtil.UpdateFromRawList(shoppingList);
 	return shoppingList;
