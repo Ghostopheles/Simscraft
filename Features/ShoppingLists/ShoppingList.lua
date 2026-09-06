@@ -238,8 +238,18 @@ function SimscraftShoppingListFrameMixin:OnLoad()
 
 	Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, self.OnShoppingListAdded, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SHOW, self.OnShoppingListShow, self);
+	--Registry:RegisterCallback(Events.SHOPPING_LIST_RENAMED, self.OnShoppingListRenamed, self);
 
 	self.ActiveList = nil;
+
+	self.RenameButton:SetScript("OnClick", function()
+		self:OnRenameButtonClicked();
+	end);
+
+	local header = self.Header;
+	header.RenameEditBox:SetScript("OnEnterPressed", function()
+		self:OnRenameEditBoxEnterPressed();
+	end);
 end
 
 function SimscraftShoppingListFrameMixin:OnShoppingListAdded(list)
@@ -253,6 +263,13 @@ function SimscraftShoppingListFrameMixin:OnShoppingListShow(list)
 	self:SetTitle(list.Name);
 	self.DataProvider = nil;
 	self:AddItems(list.Items);
+
+	self:SetNameEditModeEnabled(false);
+end
+
+function SimscraftShoppingListFrameMixin:OnShoppingListRenamed(oldName, newName)
+	self:SetTitle(newName);
+	self:SetNameEditModeEnabled(false);
 end
 
 function SimscraftShoppingListFrameMixin:SetTitle(title)
@@ -270,5 +287,42 @@ function SimscraftShoppingListFrameMixin:AddItems(items)
 			ItemID = itemID,
 			Quantity = quantity
 		});
+	end
+end
+
+function SimscraftShoppingListFrameMixin:OnRenameButtonClicked()
+	printf("active list: %s", self.ActiveList);
+	printf("title: %s", self.Header.Title:GetText());
+	printf("editbox: %s", self.Header.RenameEditBox:GetText());
+	self:SetNameEditModeEnabled(true);
+end
+
+function SimscraftShoppingListFrameMixin:OnRenameEditBoxEnterPressed()
+	local header = self.Header;
+	local newName = header.RenameEditBox:GetText();
+	local isValidName = internal.ShoppingListManager:IsShoppingListNameAvailable(newName);
+	if not isValidName then
+		internal.Print("Invalid name"); --TODO: make this a good error
+		return;
+	end
+
+	internal.ShoppingListManager:RenameShoppingList(self.ActiveList, newName);
+end
+
+function SimscraftShoppingListFrameMixin:SetNameEditModeEnabled(enabled)
+	local header = self.Header;
+	local title = header.Title;
+	local editBox = header.RenameEditBox;
+	local renameButton = self.RenameButton;
+	if enabled then
+		title:Hide();
+		editBox:Show();
+		editBox:SetFocus(true);
+		editBox:SetText(self.ActiveList);
+		renameButton:Hide();
+	else
+		title:Show();
+		editBox:Hide();
+		renameButton:Show();
 	end
 end

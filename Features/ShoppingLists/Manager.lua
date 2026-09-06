@@ -104,6 +104,16 @@ function Manager:ConfirmShoppingListDeletion(name)
 	StaticPopup_Show("SIMSCRAFT_DELETE_SHOPPING_LIST_CONFIRM", nil, nil, name);
 end
 
+function Manager:RenameShoppingList(oldName, newName)
+	local oldList = SimscraftShoppingLists[oldName];
+	local renamed = CopyTable(oldList);
+	renamed.Name = newName;
+
+	SimscraftShoppingLists[newName] = renamed;
+	SimscraftShoppingLists[oldName] = nil;
+	Registry:TriggerEvent(Events.SHOPPING_LIST_RENAMED, oldName, newName);
+end
+
 ------------
 
 SimscraftShoppingListManagerFrameMixin = {};
@@ -149,9 +159,10 @@ function SimscraftShoppingListManagerFrameMixin:OnLoad()
 	self.ImportBackground:SetPoint("TOPLEFT", content, "BOTTOMLEFT");
 	self.ImportBackground:SetPoint("BOTTOMRIGHT", self.ShoppingList, "BOTTOMLEFT");
 
-	Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, self.OnShoppingListsChanged, self);
-	Registry:RegisterCallback(Events.SHOPPING_LIST_REMOVED, self.OnShoppingListsChanged, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, self.OnShoppingListAdded, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_REMOVED, self.OnShoppingListRemoved, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SELECTED, self.OnShoppingListSelected, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_RENAMED, self.OnShoppingListRenamed, self);
 
 	local highlight = content.ScrollBox.SelectionHighlight;
 	self.SelectionHighlight = highlight;
@@ -175,14 +186,41 @@ function SimscraftShoppingListManagerFrameMixin:OnShow()
 	self:Populate();
 end
 
-function SimscraftShoppingListManagerFrameMixin:OnShoppingListsChanged()
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListAdded(newList)
+	self:Populate();
+	local frame = self.Content.ScrollBox:FindFrameByPredicate(function(data)
+		return data.Name == newList.Name;
+	end);
+	if frame then
+		local scrollToFrame = true;
+		self:OnShoppingListSelected(frame, scrollToFrame);
+	end
+end
+
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListRemoved()
 	self:Populate();
 end
 
-function SimscraftShoppingListManagerFrameMixin:OnShoppingListSelected(listFrame)
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListRenamed(oldName, newName)
+	self:Populate();
+	local frame = self.Content.ScrollBox:FindFrameByPredicate(function(data)
+		return data.Name == newName;
+	end);
+	if frame then
+		local scrollToFrame = true;
+		self:OnShoppingListSelected(frame, scrollToFrame);
+	end
+end
+
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListSelected(listFrame, scrollToFrame)
 	self.SelectionBehavior:Select(listFrame);
 	local data = listFrame:GetData();
 	Manager:ShowShoppingList(data.Name);
+	self.LastSelected = data.Name;
+
+	if scrollToFrame then
+		self.Content.ScrollBox:ScrollToFrame(listFrame);
+	end
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnImportButtonClicked()
@@ -203,9 +241,36 @@ function SimscraftShoppingListManagerFrameMixin:Populate(lists)
 			Name = name
 		});
 	end
+
+	self:CheckSelectionAfterLoad();
 end
 
 function SimscraftShoppingListManagerFrameMixin:SetFrameSelected(frame)
 	self.SelectionHighlight:SetAllPoints(frame);
 	self.SelectionHighlight:Show();
+end
+
+function SimscraftShoppingListManagerFrameMixin:CheckSelectionAfterLoad()
+	local scrollBox = self.Content.ScrollBox;
+	if not self.SelectionBehavior:HasSelection() then
+		if self.LastSelected then
+			local frame = scrollBox:FindFrameByPredicate(function(data)
+				return data.Name == self.LastSelected;
+			end);
+			if frame then
+				local scrollToFrame = true;
+				self:OnShoppingListSelected(frame, scrollToFrame);
+				return;
+			end
+		end
+
+		local numFrames = scrollBox:GetFrameCount();
+		if numFrames > 0 then
+			local firstFrame = self.Content.ScrollBox:GetFrames()[1];
+			if firstFrame then
+				self:OnShoppingListSelected(firstFrame);
+				self.Content.ScrollBox:ScrollToBegin();
+			end
+		end
+	end
 end

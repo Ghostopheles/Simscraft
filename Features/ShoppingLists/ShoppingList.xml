@@ -80,6 +80,16 @@
 						</FontString>
 					</Layer>
 				</Layers>
+
+				<Frames>
+					<EditBox parentKey="RenameEditBox" inherits="InputBoxTemplate" autoFocus="false" hidden="true">
+						<Size x="200" y="20"/>
+						<Anchors>
+							<Anchor point="CENTER"/>
+						</Anchors>
+					</EditBox>
+				</Frames>
+
 			</Frame>
 
 			<Button parentKey="RenameButton" inherits="IconButtonTemplate">
