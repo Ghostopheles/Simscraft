@@ -141,6 +141,10 @@ function SimscraftShoppingListImportFrameMixin:OnLoad()
     self:SetTitle("Housing Shopping List Import");
     tinsert(UISpecialFrames, self:GetName());
 
+	self.NameEditBox:SetScript("OnEnterPressed", function()
+        self:OnNameEditBoxEnterPressed();
+    end);
+
     self.EditBox:SetScript("OnEnterPressed", function()
         self:OnEditBoxEnterPressed();
     end);
@@ -156,10 +160,32 @@ function SimscraftShoppingListImportFrameMixin:OnLoad()
 
 	self.EditBox.Label:SetText("Import String");
 	self.EditBox.Label:SetTextScale(labelScale);
+
+	self.NameEditBox:SetScript("OnTabPressed", function()
+		self.NameEditBox:ClearFocus();
+		self.EditBox:SetFocus();
+	end);
+
+	self.EditBox:SetScript("OnTabPressed", function()
+		self.EditBox:ClearFocus();
+		self.NameEditBox:SetFocus();
+	end);
 end
 
 function SimscraftShoppingListImportFrameMixin:OnShow()
+	self.NameEditBox:SetText("");
     self.EditBox:SetText("");
+	Registry:TriggerEvent(Events.SHOPPING_LIST_IMPORT_FRAME_VISIBILITY_CHANGED, true);
+	self.NameEditBox:SetFocus();
+end
+
+function SimscraftShoppingListImportFrameMixin:OnHide()
+	Registry:TriggerEvent(Events.SHOPPING_LIST_IMPORT_FRAME_VISIBILITY_CHANGED, false);
+end
+
+function SimscraftShoppingListImportFrameMixin:OnNameEditBoxEnterPressed()
+    self.NameEditBox:ClearFocus();
+	self.EditBox:SetFocus();
 end
 
 function SimscraftShoppingListImportFrameMixin:OnEditBoxEnterPressed()
@@ -238,7 +264,6 @@ function SimscraftShoppingListFrameMixin:OnLoad()
 
 	Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, self.OnShoppingListAdded, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SHOW, self.OnShoppingListShow, self);
-	--Registry:RegisterCallback(Events.SHOPPING_LIST_RENAMED, self.OnShoppingListRenamed, self);
 
 	self.ActiveList = nil;
 
@@ -273,7 +298,8 @@ function SimscraftShoppingListFrameMixin:OnShoppingListRenamed(oldName, newName)
 end
 
 function SimscraftShoppingListFrameMixin:SetTitle(title)
-	self.Header.Title:SetText(title);
+	local text = WHITE_FONT_COLOR:WrapTextInColorCode(title);
+	self.Header.Title:SetText(text);
 end
 
 function SimscraftShoppingListFrameMixin:AddItems(items)
@@ -291,9 +317,6 @@ function SimscraftShoppingListFrameMixin:AddItems(items)
 end
 
 function SimscraftShoppingListFrameMixin:OnRenameButtonClicked()
-	printf("active list: %s", self.ActiveList);
-	printf("title: %s", self.Header.Title:GetText());
-	printf("editbox: %s", self.Header.RenameEditBox:GetText());
 	self:SetNameEditModeEnabled(true);
 end
 

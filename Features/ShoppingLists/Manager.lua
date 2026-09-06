@@ -163,6 +163,7 @@ function SimscraftShoppingListManagerFrameMixin:OnLoad()
 	Registry:RegisterCallback(Events.SHOPPING_LIST_REMOVED, self.OnShoppingListRemoved, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SELECTED, self.OnShoppingListSelected, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_RENAMED, self.OnShoppingListRenamed, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_IMPORT_FRAME_VISIBILITY_CHANGED, self.OnImportFrameVisibilityChanged, self);
 
 	local highlight = content.ScrollBox.SelectionHighlight;
 	self.SelectionHighlight = highlight;
@@ -225,6 +226,10 @@ end
 
 function SimscraftShoppingListManagerFrameMixin:OnImportButtonClicked()
 	SimscraftShoppingListImportFrame:Show();
+end
+
+function SimscraftShoppingListManagerFrameMixin:OnImportFrameVisibilityChanged(isShown)
+	self.ImportButton:SetEnabled(not isShown);
 end
 
 function SimscraftShoppingListManagerFrameMixin:ResetDataProvider()

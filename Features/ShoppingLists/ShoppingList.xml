@@ -60,6 +60,7 @@
         <Scripts>
             <OnLoad method="OnLoad"/>
             <OnShow method="OnShow"/>
+			<OnHide method="OnHide"/>
         </Scripts>
     </Frame>
 
@@ -73,7 +74,7 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<FontString parentKey="Title" font="DatamineCleanFontBig" wordwrap="true" justifyH="CENTER" justifyV="MIDDLE" text="$SHOPPING LIST NAME$">
+						<FontString parentKey="Title" font="GameFontNormalHuge" wordwrap="true" justifyH="CENTER" justifyV="MIDDLE" text="$SHOPPING LIST NAME$">
 							<Anchors>
 								<Anchor point="CENTER"/>
 							</Anchors>
