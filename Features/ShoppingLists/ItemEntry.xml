@@ -3,7 +3,7 @@
 
     <Include file="ItemEntry.lua"/>
 
-    <Frame name="SimscraftShoppingListItemEntryTemplate" mixin="SimscraftShoppingListItemEntryMixin" virtual="true">
+    <Frame name="SimscraftShoppingListItemEntryTemplate" mixin="SimscraftShoppingListItemEntryMixin" hyperlinksEnabled="true" virtual="true">
         <Size y="100"/>
 
         <Frames>
@@ -31,6 +31,17 @@
 					<KeyValue key="tooltipAnchor" value="ANCHOR_TOP" type="string"/>
 				</KeyValues>
 			</Button>
+
+			<Button parentKey="InspectButton">
+				<Size x="36" y="36"/>
+				<NormalTexture parentKey="NormalTexture" atlas="decor-controls-inspect-default" setAllPoints="true"/>
+				<PushedTexture parentKey="PushedTexture" atlas="decor-controls-inspect-pressed" setAllPoints="true"/>
+				<HighlightTexture parentKey="HighlightTexture" atlas="decor-controls-inspect-active" setAllPoints="true"/>
+
+				<Anchors>
+					<Anchor point="RIGHT" relativeKey="$parent.ItemButton" relativePoint="LEFT" x="-5"/>
+				</Anchors>
+			</Button>
         </Frames>
 
 		<Layers>
@@ -44,7 +55,7 @@
 				<Texture parentKey="HighlightBorder" atlas="TalkingHeads-Glow-TextSheen" setAllPoints="true" alpha="0.15"/>
 			</Layer>
 			<Layer level="ARTWORK">
-				<FontString parentKey="Name" font="GameFontWhite" text="Item name goes here">
+				<FontString parentKey="Name" font="GameFontWhite" text="Item name goes here" propagateMouseInputMask="Clicks">
 					<Anchors>
 						<Anchor point="LEFT" relativeKey="$parent.ItemButton" relativePoint="RIGHT" x="10" />
 					</Anchors>
@@ -74,6 +85,10 @@
             <OnLoad method="OnLoad"/>
 			<OnEnter method="OnEnter"/>
 			<OnLeave method="OnLeave"/>
+			<OnMouseUp method="OnMouseUp"/>
+			<OnHyperlinkClick method="OnHyperlinkClick" />
+			<OnHyperlinkEnter method="OnHyperlinkEnter"/>
+			<OnHyperlinkLeave method="OnHyperlinkLeave"/>
         </Scripts>
     </Frame>
 </Ui>
