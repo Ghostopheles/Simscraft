@@ -6,131 +6,11 @@ local internal = select(2, ...);
 
 local Events = internal.Events;
 local Registry = internal.Registry;
+local ShoppingListUtil = internal.ShoppingListUtil;
 
 ------------
 
 local LIST_IMPORT_SUCCESS_SOUNDKIT = SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE;
-
-------------
-
----@class SimscraftShoppingListMixin
----@field RawList table<number, {ItemID: number, Quantity: number}[]> maps creatureID to list of itemIDs and quantities
----@field Vendors table<number, number[]> maps creatureID to list of itemIDs
----@field Items table<number, number> maps itemID to quantity
----@field Name string Unique name
-local ShoppingListMixin = {};
-
-function ShoppingListMixin:Init(list, name)
-    self.RawList = list;
-    self.Vendors = {};
-    self.Items = {};
-	self.Name = name;
-
-    for cid, items in pairs(self.RawList) do
-        local vendor = {};
-
-        for _, item in ipairs(items) do
-            if not self.Items[item.ItemID] then
-                self.Items[item.ItemID] = item.Quantity;
-            end
-            tinsert(vendor, item.ItemID);
-        end
-
-        self.Vendors[cid] = vendor;
-    end
-end
-
----@param itemID number
----@return number
-function ShoppingListMixin:GetRequestedItemQuantityByID(itemID)
-    return self.Items[itemID];
-end
-
----@param itemID number
----@param amount number
-function ShoppingListMixin:SetRequestedItemQuantityByID(itemID, amount)
-    self.Items[itemID] = amount;
-end
-
----@param itemID number
----@param amount number
-function ShoppingListMixin:AdjustRequestedQuantityForItem(itemID, amount)
-    local oldCount = self:GetRequestedItemQuantityByID(itemID);
-    if oldCount then
-        self:SetRequestedItemQuantityByID(itemID, oldCount + amount);
-    end
-end
-
----@param creatureID number
----@return number[]?
-function ShoppingListMixin:GetItemsForVendor(creatureID)
-    return self.Vendors[creatureID];
-end
-
----@param creatureID number
----@return boolean
-function ShoppingListMixin:IsVendorInShoppingList(creatureID)
-    return self:GetItemsForVendor(creatureID) ~= nil;
-end
-
----@param creatureID number
-function ShoppingListMixin:ClearItemsForVendor(creatureID)
-    self.Vendors[creatureID] = nil;
-end
-
-function ShoppingListMixin:UpdateVendors()
-    local newVendors = {};
-    for vendor, items in pairs(self.Vendors) do
-        local newItems = {};
-        for _, itemID in ipairs(items) do
-            if self:GetRequestedItemQuantityByID(itemID) > 0 then
-                tinsert(newItems, itemID);
-            end
-        end
-        newVendors[vendor] = newItems;
-    end
-
-    if #newVendors == 0 then
-        newVendors = nil;
-    end
-
-    self.Vendors = newVendors;
-end
-
-------------
-
----@param shoppingListStr string
----@return SimscraftShoppingListMixin
-local function ParseShoppingList(shoppingListStr, name)
-    local list = {};
-
-    local split = strsplittable(";", shoppingListStr);
-    for _, entry in ipairs(split) do
-        local cids, iids = strsplit(":", entry); -- creature ids and item ids
-
-        -- parsing out itemIDs and quantities
-        local allItems = {};
-        local items = strsplittable(",", iids);
-        for _, itemEntry in ipairs(items) do
-            local itemID, quantity = strsplit("-", itemEntry);
-            local item = {
-                ItemID = tonumber(itemID),
-                Quantity = tonumber(quantity)
-            };
-            tinsert(allItems, item);
-        end
-
-        -- parsing out creature IDs
-        local creatures = strsplittable(",", cids);
-        for _, creature in ipairs(creatures) do
-            local cid = tonumber(creature);
-            assert(cid, "Invalid shopping list creatureID");
-            list[cid] = allItems;
-        end
-    end
-
-    return CreateAndInitFromMixin(ShoppingListMixin, list, name);
-end
 
 ------------
 
@@ -224,7 +104,7 @@ function SimscraftShoppingListImportFrameMixin:Submit()
 	end
 
 	local name = strtrim(self.NameEditBox:GetText());
-    local list = ParseShoppingList(self.EditBox:GetText(), name);
+    local list = ShoppingListUtil.ParseShoppingListImport(self.EditBox:GetText(), name);
     internal.ShoppingListManager:AddShoppingList(name, list);
     self:Hide();
     PlaySound(LIST_IMPORT_SUCCESS_SOUNDKIT);
@@ -264,8 +144,7 @@ function SimscraftShoppingListFrameMixin:OnLoad()
 
 	Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, self.OnShoppingListAdded, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SHOW, self.OnShoppingListShow, self);
-
-	self.ActiveList = nil;
+	Registry:RegisterCallback(Events.SHOPPING_LIST_DELETE_ITEM, self.OnShoppingListDeleteItem, self);
 
 	self.RenameButton:SetScript("OnClick", function()
 		self:OnRenameButtonClicked();
@@ -284,10 +163,9 @@ function SimscraftShoppingListFrameMixin:OnShoppingListAdded(list)
 end
 
 function SimscraftShoppingListFrameMixin:OnShoppingListShow(list)
-	self.ActiveList = list.Name;
+	self.ActiveList = list;
 	self:SetTitle(list.Name);
-	self.DataProvider = nil;
-	self:AddItems(list.Items);
+	self:RefreshItems(list.Items);
 
 	self:SetNameEditModeEnabled(false);
 end
@@ -295,6 +173,11 @@ end
 function SimscraftShoppingListFrameMixin:OnShoppingListRenamed(oldName, newName)
 	self:SetTitle(newName);
 	self:SetNameEditModeEnabled(false);
+end
+
+function SimscraftShoppingListFrameMixin:RefreshItems(items)
+	self.DataProvider = nil;
+	self:AddItems(items);
 end
 
 function SimscraftShoppingListFrameMixin:SetTitle(title)
@@ -329,7 +212,7 @@ function SimscraftShoppingListFrameMixin:OnRenameEditBoxEnterPressed()
 		return;
 	end
 
-	internal.ShoppingListManager:RenameShoppingList(self.ActiveList, newName);
+	internal.ShoppingListManager:RenameShoppingList(self.ActiveList.Name, newName);
 end
 
 function SimscraftShoppingListFrameMixin:SetNameEditModeEnabled(enabled)
@@ -341,11 +224,17 @@ function SimscraftShoppingListFrameMixin:SetNameEditModeEnabled(enabled)
 		title:Hide();
 		editBox:Show();
 		editBox:SetFocus(true);
-		editBox:SetText(self.ActiveList);
+		editBox:SetText(self.ActiveList.Name);
 		renameButton:Hide();
 	else
 		title:Show();
 		editBox:Hide();
 		renameButton:Show();
 	end
+end
+
+function SimscraftShoppingListFrameMixin:OnShoppingListDeleteItem(itemID)
+	local shoppingList = internal.ShoppingListManager:GetShoppingList(self.ActiveList.Name);
+	ShoppingListUtil.RemoveItemFromListByID(shoppingList, itemID);
+	self:RefreshItems(shoppingList.Items);
 end

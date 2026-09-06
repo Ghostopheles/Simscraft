@@ -3,6 +3,7 @@ local internal = select(2, ...);
 
 local Events = internal.Events;
 local Registry = internal.Registry;
+local ShoppingListUtil = internal.ShoppingListUtil;
 
 ---@class SimscraftShoppingListManager
 local Manager = {};
@@ -89,11 +90,21 @@ function Manager:GetShoppingLists()
     return SimscraftShoppingLists;
 end
 
+---@param name string
+---@return SimscraftShoppingList
+function Manager:GetShoppingList(name)
+	return SimscraftShoppingLists[name];
+end
+
 function Manager:ShowShoppingList(name)
 	local list = SimscraftShoppingLists[name];
 	if name then
 		Registry:TriggerEvent(Events.SHOPPING_LIST_SHOW, list);
 	end
+end
+
+function Manager:SaveShoppingList(name, shoppingList)
+	SimscraftShoppingLists[name] = shoppingList;
 end
 
 function Manager:IsShoppingListNameAvailable(name)
