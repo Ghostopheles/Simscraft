@@ -7,28 +7,6 @@
         <Size y="100"/>
 
         <Frames>
-			<Button parentKey="UpButton">
-				<Size x="16" y="16" />
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativePoint="LEFT" x="15" y="10"/>
-				</Anchors>
-				<NormalTexture atlas="housing-floor-arrow-up-default" setAllPoints="true"/>
-				<PushedTexture atlas="housing-floor-arrow-up-pressed" setAllPoints="true"/>
-				<DisabledTexture atlas="housing-floor-arrow-up-disabled" setAllPoints="true"/>
-				<HighlightTexture atlas="housing-floor-arrow-up-default" setAllPoints="true" alphaMode="ADD"/>
-			</Button>
-
-			<Button parentKey="DownButton">
-				<Size x="16" y="16" />
-				<Anchors>
-					<Anchor point="TOPLEFT" relativePoint="LEFT" x="15" y="-10"/>
-				</Anchors>
-				<NormalTexture atlas="housing-floor-arrow-down-default" setAllPoints="true"/>
-				<PushedTexture atlas="housing-floor-arrow-down-pressed" setAllPoints="true"/>
-				<DisabledTexture atlas="housing-floor-arrow-down-disabled" setAllPoints="true"/>
-				<HighlightTexture atlas="housing-floor-arrow-down-default" setAllPoints="true" alphaMode="ADD"/>
-			</Button>
-
 			<Button parentKey="ItemButton">
 				<Size x="50" y="50"/>
 				<Anchors>

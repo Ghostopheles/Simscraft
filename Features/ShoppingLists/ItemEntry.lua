@@ -9,8 +9,6 @@ local Registry = internal.Registry;
 SimscraftShoppingListItemEntryMixin = {};
 
 function SimscraftShoppingListItemEntryMixin:OnLoad()
-	self.UpButton:SetScript("OnClick", function() self:OnUpButtonClicked(); end);
-	self.DownButton:SetScript("OnClick", function() self:OnDownButtonClicked(); end);
 	self.DeleteButton:SetScript("OnClick", function() self:OnDeleteButtonClicked(); end);
 
 	self.Name:SetPoint("RIGHT", self.QuantityText, "LEFT", -10, 0);
@@ -41,14 +39,9 @@ function SimscraftShoppingListItemEntryMixin:Init(data)
 
 	local quantity = data.Quantity;
 	self:SetRequiredQuantity(quantity);
-end
 
-function SimscraftShoppingListItemEntryMixin:OnUpButtonClicked()
-	Registry:TriggerEvent(Events.SHOPPING_LIST_MOVE_ITEM, self.ItemID, 1);
-end
-
-function SimscraftShoppingListItemEntryMixin:OnDownButtonClicked()
-	Registry:TriggerEvent(Events.SHOPPING_LIST_MOVE_ITEM, self.ItemID, -1);
+	self:UpdateOwnedQuantity();
+	self:UpdateQuantityText();
 end
 
 function SimscraftShoppingListItemEntryMixin:OnDeleteButtonClicked()
@@ -72,12 +65,22 @@ end
 
 function SimscraftShoppingListItemEntryMixin:SetRequiredQuantity(quantity)
 	self.RequiredQuantity = quantity;
-	local owned = 0;
-
-	local text = format("%d/%d", owned, quantity);
-	self.QuantityText:SetTextToFit(text);
 end
 
 function SimscraftShoppingListItemEntryMixin:UpdateOwnedQuantity()
+	local catalogEntryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(self.ItemID);
+	local owned = catalogEntryInfo.totalNumStored;
+	self.OwnedQuantity = owned;
+end
 
+function SimscraftShoppingListItemEntryMixin:UpdateQuantityText()
+	local owned = self.OwnedQuantity;
+	local required = self.RequiredQuantity;
+	local text = format("%d/%d", owned, required);
+
+	if owned >= required then
+		text = GRAY_FONT_COLOR:WrapTextInColorCode(text);
+	end
+
+	self.QuantityText:SetTextToFit(text);
 end
