@@ -41,7 +41,11 @@
 				</Anchors>
 
 				<Frames>
-					<Frame parentKey="ScrollBox" inherits="WowScrollBoxList"/>
+					<Frame parentKey="ScrollBox" inherits="WowScrollBoxList">
+						<Frames>
+							<Frame parentKey="SelectionHighlight" inherits="NineSlicePanelTemplate" hidden="true"/>
+						</Frames>
+					</Frame>
 					<EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar">
 						<Anchors>
 							<Anchor point="TOPRIGHT" x="-10" y="-10"/>

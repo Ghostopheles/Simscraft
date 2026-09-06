@@ -18,17 +18,14 @@ function SimscraftShoppingListManagerListEntryMixin:Init(data)
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnEnter()
-
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnLeave()
-
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnMouseDown()
-
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnMouseUp()
-	internal.ShoppingListManager:ShowShoppingList(self.Name);
+	Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, self);
 end

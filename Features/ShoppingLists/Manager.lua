@@ -10,6 +10,48 @@ internal.ShoppingListManager = Manager;
 
 ------------
 
+local bCornerOffset = 2;
+local SELECTION_HIGHLIGHT_NINESLICE = {
+	mirrorLayout = true,
+	TopLeftCorner =	{
+		atlas = "editmode-actionbar-selected-nineslice-corner",
+		x = -bCornerOffset,
+		y = bCornerOffset,
+	},
+	TopRightCorner = {
+		atlas = "editmode-actionbar-selected-nineslice-corner",
+		x = bCornerOffset,
+		y = bCornerOffset,
+	},
+	BottomLeftCorner = {
+		atlas = "editmode-actionbar-selected-nineslice-corner",
+		x = -bCornerOffset,
+		y = -bCornerOffset,
+	},
+	BottomRightCorner = {
+		atlas = "editmode-actionbar-selected-nineslice-corner",
+		x = bCornerOffset,
+		y = -bCornerOffset,
+	},
+	TopEdge = {
+		atlas = "_editmode-actionbar-selected-nineslice-edgetop",
+	},
+	BottomEdge = {
+		atlas = "_editmode-actionbar-selected-nineslice-edgebottom",
+		mirrorLayout = false,
+	},
+	LeftEdge = {
+		atlas = "!editmode-actionbar-selected-nineslice-edgeleft",
+		mirrorLayout = false,
+	},
+	RightEdge = {
+		atlas = "!editmode-actionbar-selected-nineslice-edgeright",
+		mirrorLayout = false,
+	},
+};
+
+------------
+
 if not SimscraftShoppingLists then
     SimscraftShoppingLists = {};
 end
@@ -85,6 +127,24 @@ function SimscraftShoppingListManagerFrameMixin:OnLoad()
 
 	Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, self.OnShoppingListsChanged, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_REMOVED, self.OnShoppingListsChanged, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_SELECTED, self.OnShoppingListSelected, self);
+
+	local highlight = content.ScrollBox.SelectionHighlight;
+	self.SelectionHighlight = highlight;
+	NineSliceUtil.ApplyLayout(highlight, SELECTION_HIGHLIGHT_NINESLICE);
+
+	self.SelectionBehavior = ScrollUtil.AddSelectionBehavior(content.ScrollBox, SelectionBehaviorFlags.Intrusive);
+	local function SelectionCallback(_, elementData, isSelected)
+		if not isSelected then
+			highlight:Hide();
+		else
+			local button = content.ScrollBox:FindFrame(elementData);
+			if button then
+				self:SetFrameSelected(button);
+			end
+		end
+	end
+	self.SelectionBehavior:RegisterCallback(SelectionBehaviorMixin.Event.OnSelectionChanged, SelectionCallback, self);
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnShow()
@@ -93,6 +153,12 @@ end
 
 function SimscraftShoppingListManagerFrameMixin:OnShoppingListsChanged()
 	self:Populate();
+end
+
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListSelected(listFrame)
+	self.SelectionBehavior:Select(listFrame);
+	local data = listFrame:GetData();
+	Manager:ShowShoppingList(data.Name);
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnImportButtonClicked()
@@ -113,4 +179,9 @@ function SimscraftShoppingListManagerFrameMixin:Populate(lists)
 			Name = name
 		});
 	end
+end
+
+function SimscraftShoppingListManagerFrameMixin:SetFrameSelected(frame)
+	self.SelectionHighlight:SetAllPoints(frame);
+	self.SelectionHighlight:Show();
 end

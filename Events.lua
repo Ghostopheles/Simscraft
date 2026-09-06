@@ -30,13 +30,14 @@ local Events = {
 	SHOPPING_LIST_ADDED = "SHOPPING_LIST_ADDED",
 	SHOPPING_LIST_REMOVED = "SHOPPING_LIST_REMOVED",
 	SHOPPING_LIST_MOVE_ITEM = "SHOPPING_LIST_MOVE_ITEM",
-	SHOPPING_LIST_DELETE_ITEM = "SHOPPING_LIST_DELETE_ITEM"
+	SHOPPING_LIST_DELETE_ITEM = "SHOPPING_LIST_DELETE_ITEM",
+	SHOPPING_LIST_SELECTED = "SHOPPING_LIST_SELECTED"
 };
 
 ---@class SimscraftEventRegistry : CallbackRegistryMixin
 local Registry = CreateFromMixins(CallbackRegistryMixin);
 Registry:OnLoad();
-Registry:GenerateCallbackEvents(GetKeysArray(Events));
+Registry.Event = Events;
 
 internal.Events = Events;
 internal.Registry = Registry;
