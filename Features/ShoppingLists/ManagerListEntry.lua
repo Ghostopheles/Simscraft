@@ -9,6 +9,9 @@ local Registry = internal.Registry;
 SimscraftShoppingListManagerListEntryMixin = {};
 
 function SimscraftShoppingListManagerListEntryMixin:OnLoad()
+	self.DeleteButton:SetScript("OnClick", function()
+		self:OnDeleteButtonPressed();
+	end);
 end
 
 function SimscraftShoppingListManagerListEntryMixin:Init(data)
@@ -28,4 +31,12 @@ end
 
 function SimscraftShoppingListManagerListEntryMixin:OnMouseUp()
 	Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, self);
+end
+
+function SimscraftShoppingListManagerListEntryMixin:OnDeleteButtonPressed()
+	if not IsShiftKeyDown() then
+		internal.ShoppingListManager:ConfirmShoppingListDeletion(self.Name);
+	else
+		internal.ShoppingListManager:RemoveShoppingList(self.Name);
+	end
 end

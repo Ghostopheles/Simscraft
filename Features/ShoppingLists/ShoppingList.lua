@@ -146,8 +146,16 @@ function SimscraftShoppingListImportFrameMixin:OnLoad()
     end);
 
     local wowdbLink = YELLOW_FONT_COLOR:WrapTextInColorCode("housing.wowdb.com");
-    local helpText = format("Paste in a shopping list from %s and press enter to import it.", wowdbLink);
+    local helpText = format("Give your list a name, then paste in the code from %s and press enter to import it.", wowdbLink);
     self.HelpText:SetTextToFit(helpText);
+
+	local labelScale = 0.9;
+
+	self.NameEditBox.Label:SetText("Name");
+	self.NameEditBox.Label:SetTextScale(labelScale);
+
+	self.EditBox.Label:SetText("Import String");
+	self.EditBox.Label:SetTextScale(labelScale);
 end
 
 function SimscraftShoppingListImportFrameMixin:OnShow()
@@ -158,8 +166,38 @@ function SimscraftShoppingListImportFrameMixin:OnEditBoxEnterPressed()
     self:Submit();
 end
 
+function SimscraftShoppingListImportFrameMixin:Validate()
+	local name = strtrim(self.NameEditBox:GetText());
+	if not name or name == "" then
+		PlaySound(SOUNDKIT.ACCOUNT_STORE_CATEGORY_SELECT);
+		internal.Print("A name is required in order to import a shopping list.");
+		return false;
+	end
+
+	local nameAvailable = internal.ShoppingListManager:IsShoppingListNameAvailable(name);
+	if not nameAvailable then
+		PlaySound(SOUNDKIT.ACCOUNT_STORE_CATEGORY_SELECT);
+		internal.Print(format("Shopping list name '%s' is already taken or is invalid.", name));
+		return false;
+	end
+
+	local importString = strtrim(self.EditBox:GetText());
+	if not importString or importString == "" then
+		PlaySound(SOUNDKIT.ACCOUNT_STORE_CATEGORY_SELECT);
+		internal.Print("Shopping list import string is missing or invalid.");
+		return false;
+	end
+
+	return true;
+end
+
 function SimscraftShoppingListImportFrameMixin:Submit()
-	local name = "test list";
+	local valid = self:Validate();
+	if not valid then
+		return;
+	end
+
+	local name = strtrim(self.NameEditBox:GetText());
     local list = ParseShoppingList(self.EditBox:GetText(), name);
     internal.ShoppingListManager:AddShoppingList(name, list);
     self:Hide();

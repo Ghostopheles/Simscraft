@@ -52,6 +52,21 @@ local SELECTION_HIGHLIGHT_NINESLICE = {
 
 ------------
 
+StaticPopupDialogs["SIMSCRAFT_DELETE_SHOPPING_LIST_CONFIRM"] = {
+    text =  "Are you sure you want to remove this shopping list?",
+    button1 = PERKS_PROGRAM_CART_CLEAR_POPUP_CONFIRMATION,
+    button2 = CANCEL,
+    OnAccept = function(dialog)
+		Manager:RemoveShoppingList(dialog.data);
+	end,
+    hideOnEscape = true,
+    timeout = 0,
+    exclusive = true,
+    showAlert = true
+};
+
+------------
+
 if not SimscraftShoppingLists then
     SimscraftShoppingLists = {};
 end
@@ -67,6 +82,7 @@ end
 
 function Manager:RemoveShoppingList(name)
     SimscraftShoppingLists[name] = nil;
+	Registry:TriggerEvent(Events.SHOPPING_LIST_REMOVED, name);
 end
 
 function Manager:GetShoppingLists()
@@ -78,6 +94,14 @@ function Manager:ShowShoppingList(name)
 	if name then
 		Registry:TriggerEvent(Events.SHOPPING_LIST_SHOW, list);
 	end
+end
+
+function Manager:IsShoppingListNameAvailable(name)
+	return SimscraftShoppingLists[name] == nil;
+end
+
+function Manager:ConfirmShoppingListDeletion(name)
+	StaticPopup_Show("SIMSCRAFT_DELETE_SHOPPING_LIST_CONFIRM", nil, nil, name);
 end
 
 ------------

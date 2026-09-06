@@ -10,19 +10,47 @@
             <Anchor point="TOP" x="0" y="-150"/>
         </Anchors>
         <Frames>
+			<EditBox parentKey="NameEditBox" inherits="InputBoxTemplate" font="GameFontWhite" autoFocus="false">
+                <Size x="175" y="20"/>
+                <Anchors>
+                    <Anchor point="CENTER" x="0" y="-15"/>
+                </Anchors>
+
+				<Layers>
+					<Layer level="OVERLAY">
+						<FontString parentKey="Label" font="GameFontWhite" justifyH="LEFT">
+							<Anchors>
+								<Anchor point="CENTER" relativePoint="TOP" y="-2" />
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+
+            </EditBox>
             <EditBox parentKey="EditBox" inherits="InputBoxTemplate" font="GameFontWhite" autoFocus="false">
                 <Size x="250" y="20"/>
                 <Anchors>
-                    <Anchor point="BOTTOM" x="0" y="25"/>
+                    <Anchor point="TOP" relativeKey="$parent.NameEditBox" relativePoint="BOTTOM" y="-5"/>
                 </Anchors>
+
+				<Layers>
+					<Layer level="OVERLAY">
+						<FontString parentKey="Label" font="GameFontWhite" justifyH="LEFT">
+							<Anchors>
+								<Anchor point="CENTER" relativePoint="TOP" y="-2" />
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+
             </EditBox>
         </Frames>
         <Layers>
             <Layer level="ARTWORK">
                 <FontString parentKey="HelpText" font="GameFontWhite">
                     <Anchors>
-                        <Anchor point="TOPLEFT" x="25" y="-35"/>
-                        <Anchor point="TOPRIGHT" x="-25" y="-35"/>
+                        <Anchor point="TOPLEFT" x="25" y="-25"/>
+                        <Anchor point="TOPRIGHT" x="-25" y="-25"/>
                         <Anchor point="BOTTOM" relativeKey="$parent.EditBox" relativePoint="TOP" y="15"/>
                     </Anchors>
                 </FontString>
