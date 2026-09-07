@@ -4,7 +4,7 @@
     <Include file="Manager.lua"/>
 	<Include file="ManagerListEntry.xml"/>
 
-    <Frame name="SimscraftShoppingListManagerFrame" parent="UIParent" mixin="SimscraftShoppingListManagerFrameMixin">
+    <Frame name="SimscraftShoppingListManagerFrame" parent="UIParent" mixin="SimscraftShoppingListManagerFrameMixin" hidden="true">
         <Size x="800" y="600"/>
         <Anchors>
             <Anchor point="CENTER"/>
