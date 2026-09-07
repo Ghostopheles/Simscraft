@@ -29,6 +29,7 @@ Simscraft.lua
 Settings.lua
 SettingsDefinitions.lua
 ColorUtil.lua
+DecorUtil.lua
 
 MusicDefinitions.lua
 Music.lua

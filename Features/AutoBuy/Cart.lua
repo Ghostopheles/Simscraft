@@ -4,6 +4,7 @@ local internal = select(2, ...);
 local Events = internal.Events;
 local Registry = internal.Registry;
 local Enums = internal.Enums;
+local DecorUtil = internal.DecorUtil;
 
 ------------
 
@@ -104,18 +105,43 @@ function Cart.IncrementQuantityForItemInCartByIndex(index, amount)
     amount = amount or 1;
     local entry = Cart.GetItemByIndex(index);
     if entry then
-        entry.Quantity = entry.Quantity + amount;
-        Cart.Refresh();
-    end
-end
-
-function Cart.SetQuantityForItemInCartByIndex(index, newQuantity)
-    local entry = Cart.GetItemByIndex(index);
-    if entry then
+		local newQuantity = entry.Quantity + amount;
+		if newQuantity <= 0 then
+			Cart.RemoveItemFromCartByIndex(index);
+			return;
+		end
         entry.Quantity = newQuantity;
         Cart.Refresh();
     end
 end
+Registry:RegisterCallback(Events.CART_ADJUST_QUANTITY_BY_INDEX, function(_, ...) Cart.IncrementQuantityForItemInCartByIndex(...) end);
+
+function Cart.SetQuantityForItemInCartByIndex(index, newQuantity)
+    local entry = Cart.GetItemByIndex(index);
+    if entry then
+		if newQuantity <= 0 then
+			Cart.RemoveItemFromCartByIndex(index);
+			return;
+		end
+
+        entry.Quantity = newQuantity;
+        Cart.Refresh();
+    end
+end
+Registry:RegisterCallback(Events.CART_SET_QUANTITY_BY_INDEX, function(_, ...) Cart.SetQuantityForItemInCartByIndex(...) end);
+
+function Cart.SetQuantityForItemFromShoppingLists(index)
+	local itemID = GetMerchantItemID(index);
+	local quantity = internal.ShoppingListManager.GetRequestedQuantityForItemID(itemID);
+	local _, ownedAmount = DecorUtil.GetAmountOwnedByItemID(itemID);
+	print(quantity, ownedAmount);
+
+	if quantity > ownedAmount then
+		local missingAmount = quantity - ownedAmount;
+		Cart.SetQuantityForItemInCartByIndex(index, missingAmount);
+	end
+end
+Registry:RegisterCallback(Events.CART_SET_QUANTITY_FROM_SHOPPING_LIST, function(_, ...) Cart.SetQuantityForItemFromShoppingLists(...); end)
 
 function Cart.AddItemToCartByIndex(index)
     SimscraftShoppingCartFrame:Show();

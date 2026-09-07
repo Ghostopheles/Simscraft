@@ -40,6 +40,14 @@
                     <Anchor point="RIGHT" x="-75" y="1" />
                 </Anchors>
             </EditBox>
+			<Button parentKey="AddItemButton" registerForClicks="AnyUp">
+				<Size x="25" y="25"/>
+				<Anchors>
+					<Anchor point="CENTER" relativeKey="$parent.QuantityEditBox" relativePoint="RIGHT" />
+				</Anchors>
+				<NormalTexture parentKey="Icon" atlas="glues-characterSelect-icon-plus" setAllPoints="true"/>
+				<HighlightTexture parentKey="Highlight" atlas="glues-characterSelect-icon-plus-hover" setAllPoints="true"/>
+			</Button>
             <Button parentKey="RemoveButton" inherits="UIPanelCloseButtonNoScripts">
                 <Size x="20" y="20" />
                 <Anchors>
