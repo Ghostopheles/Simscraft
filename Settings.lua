@@ -41,7 +41,7 @@ end
 internal.Settings.CreateDropdown = CreateDropdown;
 
 local function CreateHeader(category, name)
-    local initializer = Settings.CreateSettingsInitializer("SettingsListSectionHeaderTemplate", { name = name });
+    local initializer = Settings.CreateElementInitializer("SettingsListSectionHeaderTemplate", { name = name });
     local layout = SettingsPanel:GetLayout(category);
     layout:AddInitializer(initializer);
 

@@ -53,6 +53,60 @@ local SELECTION_HIGHLIGHT_NINESLICE = {
 
 ------------
 
+---@type table<number, number>
+local CACHED_ITEMS = {};
+
+---@type table<number, table<string, number>>
+local CACHED_LIST_TO_ITEMS = {};
+
+
+---@type table<number, number>
+local CACHED_NUM_LISTS_PER_ITEM = {};
+
+local function CacheQuantityForItem(itemID)
+	local quantity = 0;
+	local numListsForItem = 0;
+	for name, list in pairs(SimscraftShoppingLists) do
+		local listQuantity = list.Items[itemID];
+		if listQuantity then
+			quantity = quantity + listQuantity;
+			numListsForItem = numListsForItem + 1;
+
+			if not CACHED_LIST_TO_ITEMS[itemID] then
+				CACHED_LIST_TO_ITEMS[itemID] = {};
+			end
+			CACHED_LIST_TO_ITEMS[itemID][name] = listQuantity;
+		end
+	end
+	CACHED_ITEMS[itemID] = quantity;
+	CACHED_NUM_LISTS_PER_ITEM[itemID] = numListsForItem;
+	return quantity, CACHED_LIST_TO_ITEMS[itemID], numListsForItem;
+end
+
+---@param itemID number
+---@return number, table<string, number>, number
+local function GetQuantityForItem(itemID)
+	local quantity = CACHED_ITEMS[itemID];
+	if not quantity then
+		quantity = CacheQuantityForItem(itemID);
+	end
+	local quantityByList = CACHED_LIST_TO_ITEMS[itemID];
+	local numListsForItem = CACHED_NUM_LISTS_PER_ITEM[itemID];
+	return quantity, quantityByList, numListsForItem;
+end
+
+local function InvalidateItemCache()
+	CACHED_ITEMS = {};
+	CACHED_LIST_TO_ITEMS = {};
+	CACHED_NUM_LISTS_PER_ITEM = {};
+end
+
+Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, InvalidateItemCache);
+Registry:RegisterCallback(Events.SHOPPING_LIST_REMOVED, InvalidateItemCache);
+Registry:RegisterCallback(Events.SHOPPING_LIST_DELETE_ITEM, InvalidateItemCache);
+
+------------
+
 StaticPopupDialogs["SIMSCRAFT_DELETE_SHOPPING_LIST_CONFIRM"] = {
     text =  "Are you sure you want to remove this shopping list?",
     button1 = PERKS_PROGRAM_CART_CLEAR_POPUP_CONFIRMATION,
@@ -158,16 +212,9 @@ function Manager.GetTargetItemsForVendor(creatureID)
 end
 
 ---@param itemID number
----@return number
+---@return number, table<string, number>, number
 function Manager.GetRequestedQuantityForItemID(itemID)
-	local quantity = 0;
-	for _, list in pairs(SimscraftShoppingLists) do
-		local listQuantity = list.Items[itemID];
-		if listQuantity then
-			quantity = quantity + listQuantity;
-		end
-	end
-	return quantity;
+	return GetQuantityForItem(itemID);
 end
 
 ------------

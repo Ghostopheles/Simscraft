@@ -12,7 +12,8 @@ local Setting = {
     EnableDecorItemCounts = "EnableDecorItemCounts",
     EnableDecorNewItemIcon = "EnableDecorNewItemIcon",
     AddToCartModifier = "AddToCartModifier",
-    UseNewDyePicker = "UseNewDyePicker"
+    UseNewDyePicker = "UseNewDyePicker",
+	ShowTotalShoppingListMissingCount = "ShowTotalShoppingListMissingCount"
 };
 internal.Setting = Setting;
 
@@ -24,6 +25,7 @@ local defaultConfig = {
     [internal.Setting.EnableDecorNewItemIcon] = true,
     [internal.Setting.AddToCartModifier] = "SHIFT",
     [internal.Setting.UseNewDyePicker] = false,
+	[internal.Setting.ShowTotalShoppingListMissingCount] = false,
 };
 
 if not SimscraftConfig then
@@ -37,6 +39,8 @@ end
 ------------
 
 local category = S.GetCategory();
+
+S.CreateHeader(category, "House Editor");
 
 do
     local variable = internal.Setting.PlayHouseEditorMusic;
@@ -57,6 +61,17 @@ do
 end
 
 do
+    local variable = internal.Setting.UseNewDyePicker;
+    local name = "Enable Simscraft dye picker";
+    local tooltip = "Enables the color wheel-styled dye picker.";
+
+    local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
+    S.CreateCheckbox(category, setting, tooltip);
+end
+
+S.CreateHeader(category, "Shopping Cart");
+
+do
     local variable = internal.Setting.EnableAutoBuy;
     local name = "Enable Decor Shopping Cart";
     local tooltip = "Toggles the vendor decor shopping cart feature.";
@@ -67,7 +82,7 @@ end
 
 do
     local variable = internal.Setting.EnableDecorItemCounts;
-    local name = "Enable Vendor Decor Item Counts";
+    local name = "Enable Decor Item Counts";
     local tooltip = "Displays a number showing the amount of each decor item you currently have in storage, in the vendor frame.";
 
     local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
@@ -76,7 +91,7 @@ end
 
 do
     local variable = internal.Setting.EnableDecorNewItemIcon;
-    local name = "Enable Vendor New Decor Icon";
+    local name = "Enable New Decor Icon";
     local tooltip = "Shows an icon when the first acquisition bonus is available for a decor item.";
 
     local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
@@ -110,10 +125,12 @@ function S.IsAddToCartModifierDown()
     end
 end
 
+S.CreateHeader(category, "Shopping Lists");
+
 do
-    local variable = internal.Setting.UseNewDyePicker;
-    local name = "Enable Simscraft dye picker";
-    local tooltip = "Enables the color wheel-styled dye picker.";
+    local variable = internal.Setting.ShowTotalShoppingListMissingCount;
+    local name = "Show Total Missing Count";
+    local tooltip = "Show the total missing count for an item instead of a per-shopping list breakdown.";
 
     local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
     S.CreateCheckbox(category, setting, tooltip);
