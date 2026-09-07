@@ -125,6 +125,51 @@ function Manager:RenameShoppingList(oldName, newName)
 	Registry:TriggerEvent(Events.SHOPPING_LIST_RENAMED, oldName, newName);
 end
 
+---@param creatureID number
+---@return bool
+function Manager.IsVendorRelevant(creatureID)
+	for name, list in pairs(SimscraftShoppingLists) do
+		if ShoppingListUtil.IsVendorInShoppingList(list, creatureID) then
+			return true;
+		end
+	end
+	return false;
+end
+
+---@param creatureID number
+---@return table<number, number>
+function Manager.GetTargetItemsForVendor(creatureID)
+	local items = {};
+	for name, list in pairs(SimscraftShoppingLists) do
+		local allListItems = list.Items;
+		local vendorItems = ShoppingListUtil.GetItemsForVendor(list, creatureID);
+		for _, itemID in pairs(vendorItems) do
+			local quantity = allListItems[itemID];
+			if quantity and quantity > 0 then
+				if items[itemID] then
+					items[itemID] = items[itemID] + quantity;
+				else
+					items[itemID] = quantity;
+				end
+			end
+		end
+	end
+	return items;
+end
+
+---@param itemID number
+---@return number
+function Manager.GetRequestedQuantityForItemID(itemID)
+	local quantity = 0;
+	for _, list in pairs(SimscraftShoppingLists) do
+		local listQuantity = list.Items[itemID];
+		if listQuantity then
+			quantity = quantity + listQuantity;
+		end
+	end
+	return quantity;
+end
+
 ------------
 
 SimscraftShoppingListManagerFrameMixin = {};

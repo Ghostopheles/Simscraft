@@ -272,11 +272,26 @@ local function SetupItemCountString(itemFrame)
     return str;
 end
 
+local function SetupShoppingListItemIcon(itemFrame)
+	local parent = itemFrame.ItemButton;
+    local icon = parent:CreateTexture(nil, "OVERLAY", nil, 2);
+    icon:SetSize(22, 22);
+    icon:SetPoint("CENTER", parent, "TOPRIGHT");
+    icon:SetAtlas("Perks-ShoppingCart");
+
+    icon.tooltipText = "This item is on one of your shopping lists.";
+    internal.AddTooltip(icon);
+
+    itemFrame.ShoppingListItemIcon = icon;
+    return icon;
+end
+
 local itemCountFormat = CreateAtlasMarkup("house-chest-icon", 16, 16) .. " %s";
 local function UpdateWidgetsByMerchantIndex(nonPagedIndex)
     local itemFrame = GetItemFrameForIndex(nonPagedIndex);
     local str = itemFrame.ItemCountString;
     local icon = itemFrame.FirstAcquisitionIcon;
+	local shoppingListIcon = itemFrame.ShoppingListItemIcon;
 
     local pagedIndex = GetPagedIndex(nonPagedIndex);
     local itemID = GetMerchantItemID(pagedIndex);
@@ -287,6 +302,9 @@ local function UpdateWidgetsByMerchantIndex(nonPagedIndex)
     if icon then
         icon:Hide();
     end
+	if shoppingListIcon then
+		shoppingListIcon:Hide();
+	end
 
     if not itemID then
         return;
@@ -310,7 +328,17 @@ local function UpdateWidgetsByMerchantIndex(nonPagedIndex)
                 icon:Show();
             end
         end
-    end
+
+		local numRequested = internal.ShoppingListManager.GetRequestedQuantityForItemID(itemID);
+		local numMissing = numRequested - numStored;
+		if numMissing > 0 then
+			shoppingListIcon:Show();
+
+			local tooltipText = "This item is on one of your shopping lists.\n\nYou are currently missing %s.";
+			local missingText = WHITE_FONT_COLOR:WrapTextInColorCode(tostring(numMissing));
+			shoppingListIcon.tooltipText = format(tooltipText, missingText);
+		end
+	end
 end
 
 --- creating our widgets
@@ -324,6 +352,7 @@ local function CreateItemWidgets()
     ForEachMerchantItemFrame(function(itemFrame)
         SetupItemCountString(itemFrame);
         SetupFirstAcquisitonIcon(itemFrame);
+		SetupShoppingListItemIcon(itemFrame);
     end);
 
     widgetsCreated = true;
