@@ -215,13 +215,11 @@ C_HousingCatalog.CreateCatalogSearcher();
 local CACHE_WAIT_TIME = 0.05;
 
 local function GetDecorInfoByItemID(itemID)
-    local tryGetOwnedInfo = true;
-    local catalogEntryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(itemID, tryGetOwnedInfo);
+    local catalogEntryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(itemID);
     if not catalogEntryInfo then
         return;
     end
-
-    return catalogEntryInfo.quantity, catalogEntryInfo.firstAcquisitionBonus;
+    return catalogEntryInfo.totalNumStored, catalogEntryInfo.firstAcquisitionBonus;
 end
 
 local itemQuantityColors = {
