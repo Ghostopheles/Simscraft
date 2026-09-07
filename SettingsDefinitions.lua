@@ -13,7 +13,8 @@ local Setting = {
     EnableDecorNewItemIcon = "EnableDecorNewItemIcon",
     AddToCartModifier = "AddToCartModifier",
     UseNewDyePicker = "UseNewDyePicker",
-	ShowTotalShoppingListMissingCount = "ShowTotalShoppingListMissingCount"
+	ShowTotalShoppingListMissingCount = "ShowTotalShoppingListMissingCount",
+	EnableDecorShoppingListIcon = "EnableDecorShoppingListIcon",
 };
 internal.Setting = Setting;
 
@@ -26,6 +27,7 @@ local defaultConfig = {
     [internal.Setting.AddToCartModifier] = "SHIFT",
     [internal.Setting.UseNewDyePicker] = false,
 	[internal.Setting.ShowTotalShoppingListMissingCount] = false,
+	[internal.Setting.EnableDecorShoppingListIcon] = true
 };
 
 if not SimscraftConfig then
@@ -126,6 +128,15 @@ function S.IsAddToCartModifierDown()
 end
 
 S.CreateHeader(category, "Shopping Lists");
+
+do
+    local variable = internal.Setting.EnableDecorShoppingListIcon;
+    local name = "Show Shopping List Item Icon";
+    local tooltip = "Shows an icon on vendor items if the item is on one or more of your shopping lists.";
+
+    local setting = S.CreateSetting(category, variable, name, defaultConfig[variable]);
+    S.CreateCheckbox(category, setting, tooltip);
+end
 
 do
     local variable = internal.Setting.ShowTotalShoppingListMissingCount;

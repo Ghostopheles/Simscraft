@@ -37,6 +37,10 @@ local function IsNewItemIconEnabled()
     return internal.Settings.GetSetting(internal.Setting.EnableDecorNewItemIcon);
 end
 
+local function IsShoppingListIconEnabled()
+	return internal.Settings.GetSetting(internal.Setting.EnableDecorShoppingListIcon);
+end
+
 local function ShouldShowTotalMissingCount()
 	return internal.Settings.GetSetting(internal.Setting.ShowTotalShoppingListMissingCount);
 end
@@ -333,33 +337,35 @@ local function UpdateWidgetsByMerchantIndex(nonPagedIndex)
             end
         end
 
-		local numRequested, numRequestedByList, numListsForItem = internal.ShoppingListManager.GetRequestedQuantityForItemID(itemID);
-		local numMissing = numRequested - numStored;
-		if numMissing > 0 then
-			shoppingListIcon:Show();
+		if IsShoppingListIconEnabled() then
+			local numRequested, numRequestedByList, numListsForItem = internal.ShoppingListManager.GetRequestedQuantityForItemID(itemID);
+			local numMissing = numRequested - numStored;
+			if numMissing > 0 then
+				shoppingListIcon:Show();
 
-			local themeColor = internal.ThemeColor;
+				local themeColor = internal.ThemeColor;
 
-			local numListsText;
-			if numListsForItem == 1 then
-				numListsText = "one";
-			else
-				numListsText = themeColor:WrapTextInColorCode(tostring(numListsForItem));
-			end
-			local tooltipText = format("This item is on %s of your shopping lists.\n", numListsText);
-			if ShouldShowTotalMissingCount() then
-				tooltipText = tooltipText .. "\nYou need to buy " .. themeColor:WrapTextInColorCode(tostring(numMissing)) .. " more.";
-			else
-				for name, quantity in pairs(numRequestedByList) do
-					local numMissingByList = quantity - numStored;
-					if (quantity > 0) and (numMissingByList > 0) then
-						local listNameText = themeColor:WrapTextInColorCode(format("<%s>", name));
-						local missingTextByList = format("\n%s requires %d more.", listNameText, numMissingByList);
-						tooltipText = tooltipText .. missingTextByList;
+				local numListsText;
+				if numListsForItem == 1 then
+					numListsText = "one";
+				else
+					numListsText = themeColor:WrapTextInColorCode(tostring(numListsForItem));
+				end
+				local tooltipText = format("This item is on %s of your shopping lists.\n", numListsText);
+				if ShouldShowTotalMissingCount() then
+					tooltipText = tooltipText .. "\nYou need to buy " .. themeColor:WrapTextInColorCode(tostring(numMissing)) .. " more.";
+				else
+					for name, quantity in pairs(numRequestedByList) do
+						local numMissingByList = quantity - numStored;
+						if (quantity > 0) and (numMissingByList > 0) then
+							local listNameText = themeColor:WrapTextInColorCode(format("<%s>", name));
+							local missingTextByList = format("\n%s requires %d more.", listNameText, numMissingByList);
+							tooltipText = tooltipText .. missingTextByList;
+						end
 					end
 				end
+				shoppingListIcon.tooltipText = tooltipText;
 			end
-			shoppingListIcon.tooltipText = tooltipText;
 		end
 	end
 end
