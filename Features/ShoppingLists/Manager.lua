@@ -344,14 +344,21 @@ function SimscraftShoppingListManagerFrameMixin:Populate(lists)
 	self:ResetDataProvider();
 
 	local lists = lists or Manager:GetShoppingLists();
+	local items = {};
 	for name, list in pairs(lists) do
 		local keys = GetKeysArray(list.Items);
-		self.DataProvider:Insert({
+		tinsert(items, {
 			Name = name,
 			UniqueItems = #keys,
 			ImportedAt = list.ImportedAt,
 		});
 	end
+
+	table.sort(items, function(a, b)
+		return a.Name > b.Name;
+	end);
+
+	self.DataProvider:InsertTable(items);
 
 	self:CheckSelectionAfterLoad();
 end

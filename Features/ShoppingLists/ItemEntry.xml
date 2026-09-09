@@ -32,7 +32,7 @@
 				</KeyValues>
 			</Button>
 
-			<Button parentKey="InspectButton">
+			<Button parentKey="InspectButton" propagateMouseInput="Motion">
 				<Size x="36" y="36"/>
 				<NormalTexture parentKey="NormalTexture" atlas="decor-controls-inspect-default" setAllPoints="true"/>
 				<PushedTexture parentKey="PushedTexture" atlas="decor-controls-inspect-pressed" setAllPoints="true"/>

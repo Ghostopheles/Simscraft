@@ -178,7 +178,6 @@ end
 function SimscraftShoppingListFrameMixin:RefreshItems(items)
 	local scrollPercentage = self.Content.ScrollBox:CalculateScrollPercentage();
 
-	self.DataProvider = nil;
 	self:AddItems(items);
 
 	local noInterpolation = true;
@@ -190,18 +189,31 @@ function SimscraftShoppingListFrameMixin:SetTitle(title)
 	self.Header.Title:SetText(text);
 end
 
-function SimscraftShoppingListFrameMixin:AddItems(items)
-	if not self.DataProvider then
-		self.DataProvider = CreateDataProvider();
-		self.Content.ScrollView:SetDataProvider(self.DataProvider);
+function SimscraftShoppingListFrameMixin:ResetDataProvider()
+	self.DataProvider = CreateDataProvider();
+	self.Content.ScrollView:SetDataProvider(self.DataProvider);
+
+	self.DataProvider:SetSortComparator(function(a, b)
+		local nameA = C_Item.GetItemNameByID(a.ItemID) or UNKNOWNOBJECT;
+		local nameB = C_Item.GetItemNameByID(b.ItemID) or UNKNOWNOBJECT;
+		return nameA < nameB;
+	end);
+end
+
+function SimscraftShoppingListFrameMixin:AddItems(items, noReset)
+	if not noReset then
+		self:ResetDataProvider();
 	end
 
+	local sortedItems = {};
 	for itemID, quantity in pairs(items) do
-		self.DataProvider:Insert({
+		tinsert(sortedItems, {
 			ItemID = itemID,
 			Quantity = quantity
 		});
 	end
+
+	self.DataProvider:InsertTable(sortedItems);
 end
 
 function SimscraftShoppingListFrameMixin:OnRenameButtonClicked()
