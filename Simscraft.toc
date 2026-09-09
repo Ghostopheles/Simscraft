@@ -30,6 +30,7 @@ Settings.lua
 SettingsDefinitions.lua
 ColorUtil.lua
 DecorUtil.lua
+Catalog.lua
 
 MusicDefinitions.lua
 Music.lua
