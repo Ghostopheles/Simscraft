@@ -68,6 +68,12 @@ function SimscraftShoppingListItemEntryMixin:OnLeave()
 	end
 end
 
+function SimscraftShoppingListItemEntryMixin:OnUpdate()
+	if self.MouseOverChild and not self:IsMouseOver() then
+		self:OnLeave();
+	end
+end
+
 function SimscraftShoppingListItemEntryMixin:OnMouseUp(buttonName)
 	if IsModifiedClick("CHATLINK") and ACTIVE_CHAT_EDIT_BOX then
 		HandleModifiedItemClick(self.Name:GetText());

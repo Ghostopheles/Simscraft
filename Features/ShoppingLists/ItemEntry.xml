@@ -85,6 +85,7 @@
             <OnLoad method="OnLoad"/>
 			<OnEnter method="OnEnter"/>
 			<OnLeave method="OnLeave"/>
+			<OnUpdate method="OnUpdate"/>
 			<OnMouseUp method="OnMouseUp"/>
         </Scripts>
     </Frame>
