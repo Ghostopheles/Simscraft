@@ -29,3 +29,8 @@ function internal.AddTooltip(object, anchor, gateFunc)
         end
     end);
 end
+
+SLASH_SIMSCRAFT1, SLASH_SIMSCRAFT2 = "/simscraft", "/sims";
+function SlashCmdList.SIMSCRAFT(msg)
+	internal.ShoppingListManager.ToggleManagerFrame();
+end

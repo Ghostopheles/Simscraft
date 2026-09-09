@@ -51,6 +51,42 @@ local SELECTION_HIGHLIGHT_NINESLICE = {
 	},
 };
 
+local frameOffset = 23;
+local FRAME_BORDER_NINESLICE = {
+	TopLeftCorner =	{
+		atlas = "GenericMetal2-NineSlice-CornerTopLeft",
+		x = -frameOffset,
+		y = frameOffset,
+	},
+	TopRightCorner = {
+		atlas = "GenericMetal2-NineSlice-CornerTopRight",
+		x = frameOffset,
+		y = frameOffset,
+	},
+	BottomLeftCorner = {
+		atlas = "GenericMetal2-NineSlice-CornerBottomLeft",
+		x = -frameOffset,
+		y = -frameOffset,
+	},
+	BottomRightCorner = {
+		atlas = "GenericMetal2-NineSlice-CornerBottomRight",
+		x = frameOffset,
+		y = -frameOffset,
+	},
+	TopEdge = {
+		atlas = "_GenericMetal2-NineSlice-EdgeTop",
+	},
+	BottomEdge = {
+		atlas = "_GenericMetal2-NineSlice-EdgeBottom",
+	},
+	LeftEdge = {
+		atlas = "!GenericMetal2-NineSlice-EdgeLeft",
+	},
+	RightEdge = {
+		atlas = "!GenericMetal2-NineSlice-EdgeRight",
+	},
+};
+
 ------------
 
 ---@type table<number, number>
@@ -217,6 +253,11 @@ function Manager.GetRequestedQuantityForItemID(itemID)
 	return GetQuantityForItem(itemID);
 end
 
+function Manager.ToggleManagerFrame()
+	local f = SimscraftShoppingListManagerFrame;
+	f:SetShown(not f:IsShown());
+end
+
 ------------
 
 SimscraftShoppingListManagerFrameMixin = {};
@@ -284,6 +325,10 @@ function SimscraftShoppingListManagerFrameMixin:OnLoad()
 		end
 	end
 	self.SelectionBehavior:RegisterCallback(SelectionBehaviorMixin.Event.OnSelectionChanged, SelectionCallback, self);
+
+	tinsert(UISpecialFrames, self:GetName());
+
+	NineSliceUtil.ApplyLayout(self.NineSlice, FRAME_BORDER_NINESLICE);
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnShow()

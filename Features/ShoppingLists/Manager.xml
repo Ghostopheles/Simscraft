@@ -33,6 +33,8 @@
 		</Layers>
 
 		<Frames>
+			<Frame parentKey="NineSlice" inherits="NineSlicePanelTemplate" setAllPoints="true"/>
+
 			<Frame parentKey="Content">
 				<Size x="350"/>
 				<Anchors>
