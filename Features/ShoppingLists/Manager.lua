@@ -254,7 +254,7 @@ function SimscraftShoppingListManagerFrameMixin:OnLoad()
 	self.HeaderText:SetPoint("CENTER", self.HeaderBackground, "CENTER", 0, -3);
 
 	local themeColor = internal.ThemeColor;
-	local headerText = themeColor:WrapTextInColorCode("Simscraft") .. WHITE_FONT_COLOR:WrapTextInColorCode(" Shopping List Manager");
+	local headerText = themeColor:WrapTextInColorCode("Simscraft") .. WHITE_FONT_COLOR:WrapTextInColorCode(" Shopping Lists");
 	self.HeaderText:SetText(headerText);
 
 	self.ImportButton:SetText("Import New List");
