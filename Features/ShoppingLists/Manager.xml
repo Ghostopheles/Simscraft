@@ -35,6 +35,21 @@
 		<Frames>
 			<Frame parentKey="NineSlice" inherits="NineSlicePanelTemplate" setAllPoints="true"/>
 
+			<Button parentKey="CloseButton" inherits="UIButtonTemplate">
+				<Size x="35" y="35"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativeKey="$parent.HeaderBackground" x="-17"/>
+				</Anchors>
+				<KeyValues>
+					<KeyValue key="buttonArtKit" value="128-RedButton-Exit" type="string" />
+				</KeyValues>
+				<Scripts>
+					<OnClick>
+						self:GetParent():Hide();
+					</OnClick>
+				</Scripts>
+			</Button>
+
 			<Frame parentKey="Content">
 				<Size x="350"/>
 				<Anchors>
