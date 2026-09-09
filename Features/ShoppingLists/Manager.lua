@@ -95,7 +95,6 @@ local CACHED_ITEMS = {};
 ---@type table<number, table<string, number>>
 local CACHED_LIST_TO_ITEMS = {};
 
-
 ---@type table<number, number>
 local CACHED_NUM_LISTS_PER_ITEM = {};
 
