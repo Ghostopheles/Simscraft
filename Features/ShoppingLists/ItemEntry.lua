@@ -31,6 +31,12 @@ function SimscraftShoppingListItemEntryMixin:OnShow()
 	self:UpdateOwnedQuantity();
 end
 
+function SimscraftShoppingListItemEntryMixin:OnHide()
+	if GameTooltip:IsOwned(self) then
+		self:HideItemTooltip();
+	end
+end
+
 function SimscraftShoppingListItemEntryMixin:OnEnter()
 	if self.MouseOverChild then
 		self:ShowItemTooltip();
@@ -141,6 +147,10 @@ function SimscraftShoppingListItemEntryMixin:SetRequiredQuantity(quantity)
 end
 
 function SimscraftShoppingListItemEntryMixin:UpdateOwnedQuantity()
+	if not self.ItemID then
+		return;
+	end
+
 	local catalogEntryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(self.ItemID);
 	if not catalogEntryInfo then
 		self.StoredQuantity = 0;
