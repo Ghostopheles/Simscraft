@@ -17,7 +17,7 @@ function internal.AddTooltip(object, anchor, gateFunc)
 			return;
 		end
         if object.tooltipText then
-            GameTooltip:SetOwner(object, anchor or "ANCHOR_TOPLEFT");
+            GameTooltip:SetOwner(object, anchor or "ANCHOR_RIGHT");
             GameTooltip:SetText(object.tooltipText);
             GameTooltip:Show();
         end

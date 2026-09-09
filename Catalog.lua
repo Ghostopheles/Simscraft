@@ -34,6 +34,12 @@ function Catalog.TrackDecorByID(decorID)
 	Blizzard_HousingCatalogUtil.TrackHousingDecorID(decorID);
 end
 
+---@param itemInfo ItemInfo
+function Catalog.TrackDecorByItem(itemInfo)
+	local decorID = internal.DecorUtil.GetDecorRecordIDByItem(itemInfo);
+	Catalog.TrackDecorByID(decorID);
+end
+
 ------------
 
 internal.Catalog = Catalog;

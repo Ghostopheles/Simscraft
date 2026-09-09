@@ -10,8 +10,6 @@ SimscraftShoppingListItemEntryMixin = {};
 
 function SimscraftShoppingListItemEntryMixin:OnLoad()
 	self.DeleteButton:SetScript("OnClick", function() self:OnDeleteButtonClicked(); end);
-	self.ItemButton:SetScript("OnEnter", function() self:OnItemButtonEnter(); end);
-	self.ItemButton:SetScript("OnLeave", function() self:OnItemButtonLeave(); end);
 
 	self.Name:SetPoint("RIGHT", self.QuantityText, "LEFT", -10, 0);
 	self.Name:SetTextScale(1.2);
@@ -22,6 +20,11 @@ function SimscraftShoppingListItemEntryMixin:OnLoad()
 	self.InspectButton:SetScript("OnClick", function() self:OnInspectButtonClicked(); end);
 	self.InspectButton.tooltipText = "View this decor item in the housing catalog.";
 	internal.AddTooltip(self.InspectButton);
+
+	self:SetOnUpdateMode(Enum.OnUpdateMode.RunWhenVisible);
+
+	self.FadeIn.Alpha:SetTarget(self.FocusedBackground);
+	self.FadeOut.Alpha:SetTarget(self.Background);
 end
 
 function SimscraftShoppingListItemEntryMixin:OnShow()
@@ -29,53 +32,60 @@ function SimscraftShoppingListItemEntryMixin:OnShow()
 end
 
 function SimscraftShoppingListItemEntryMixin:OnEnter()
-	self.FadeIn.Alpha:SetTarget(self.FocusedBackground);
-	self.FadeOut.Alpha:SetTarget(self.Background);
+	if self.MouseOverChild then
+		self:ShowItemTooltip();
+		return;
+	end
+
+	self.FadeIn.Alpha:SetDuration(0.25);
+	self.FadeOut.Alpha:SetDuration(0.35);
 
 	self.FadeIn:Play();
 	self.FadeOut:Play();
+
+	self.Highlight:Show();
+	self.HighlightBorder:Show();
+
+	self:ShowItemTooltip();
 end
 
 function SimscraftShoppingListItemEntryMixin:OnLeave()
-	self.FadeIn.Alpha:SetTarget(self.Background);
-	self.FadeOut.Alpha:SetTarget(self.FocusedBackground);
+	if not self:IsMouseOver() then
+		self.FadeIn.Alpha:SetDuration(0.35);
+		self.FadeOut.Alpha:SetDuration(0.25);
 
-	self.FadeIn:Play();
-	self.FadeOut:Play();
+		local reverse = true;
+		self.FadeIn:Play(reverse);
+		self.FadeOut:Play(reverse);
+
+		self.Highlight:Hide();
+		self.HighlightBorder:Hide();
+
+		self:HideItemTooltip();
+		self.MouseOverChild = false;
+	else
+		self.MouseOverChild = true;
+	end
 end
 
 function SimscraftShoppingListItemEntryMixin:OnMouseUp(buttonName)
-	if IsModifiedClick("CHATLINK") then
+	if IsModifiedClick("CHATLINK") and ACTIVE_CHAT_EDIT_BOX then
 		HandleModifiedItemClick(self.Name:GetText());
+	elseif ContentTrackingUtil.IsTrackingModifierDown() then
+		internal.Catalog.TrackDecorByItem(self.ItemID);
 	end
 end
 
-function SimscraftShoppingListItemEntryMixin:OnHyperlinkClick(link, text)
-	if IsModifiedClick("CHATLINK") then
-		HandleModifiedItemClick(text);
-	end
-end
-
-function SimscraftShoppingListItemEntryMixin:OnHyperlinkEnter(link, text, region)
-	self:ShowItemTooltip(region, "ANCHOR_CURSOR");
-end
-
-function SimscraftShoppingListItemEntryMixin:OnHyperlinkLeave()
-	self:HideItemTooltip();
-end
-
-function SimscraftShoppingListItemEntryMixin:OnItemButtonEnter()
-	self:ShowItemTooltip(self.ItemButton);
-end
-
-function SimscraftShoppingListItemEntryMixin:OnItemButtonLeave()
-	self:HideItemTooltip();
-end
-
-function SimscraftShoppingListItemEntryMixin:ShowItemTooltip(owner, anchor)
-	anchor = anchor or "ANCHOR_TOPLEFT";
-	GameTooltip:SetOwner(self.ItemButton, "ANCHOR_TOPLEFT");
+function SimscraftShoppingListItemEntryMixin:ShowItemTooltip(owner, anchor, noTrackingLine)
+	anchor = anchor or "ANCHOR_RIGHT";
+	GameTooltip:SetOwner(owner or self, anchor);
 	GameTooltip:SetItemByID(self.ItemID);
+
+	if not noTrackingLine then
+		local recordID = internal.DecorUtil.GetDecorRecordIDByItem(self.ItemID);
+		Blizzard_HousingCatalogUtil.AddDecorEntryTooltipTrackingText(GameTooltip, recordID);
+	end
+
 	GameTooltip:Show();
 end
 

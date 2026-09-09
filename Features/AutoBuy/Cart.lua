@@ -133,7 +133,7 @@ Registry:RegisterCallback(Events.CART_SET_QUANTITY_BY_INDEX, function(_, ...) Ca
 function Cart.SetQuantityForItemFromShoppingLists(index)
 	local itemID = GetMerchantItemID(index);
 	local quantity = internal.ShoppingListManager.GetRequestedQuantityForItemID(itemID);
-	local _, storedAmount = DecorUtil.GetAmountOwnedByItemID(itemID);
+	local _, storedAmount = DecorUtil.GetAmountOwnedByItem(itemID);
 	if quantity > storedAmount then
 		local missingAmount = quantity - storedAmount;
 		Cart.SetQuantityForItemInCartByIndex(index, missingAmount);

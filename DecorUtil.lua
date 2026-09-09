@@ -4,8 +4,9 @@ local internal = select(2, ...);
 ---@class SimscraftDecorUtil
 local DecorUtil = {};
 
-function DecorUtil.GetAmountOwnedByItemID(itemID)
-	local entryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(itemID);
+---@param itemInfo ItemInfo
+function DecorUtil.GetAmountOwnedByItem(itemInfo)
+	local entryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(itemInfo);
 	if entryInfo then
 		local stored = entryInfo.totalNumStored;
 		local placed = entryInfo.totalNumPlaced;
@@ -13,6 +14,14 @@ function DecorUtil.GetAmountOwnedByItemID(itemID)
 		return total, stored, placed;
 	end
 	return 0, 0, 0;
+end
+
+---@param itemInfo ItemInfo
+function DecorUtil.GetDecorRecordIDByItem(itemInfo)
+	local entryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(itemInfo);
+	if entryInfo then
+		return entryInfo.recordID;
+	end
 end
 
 ------------

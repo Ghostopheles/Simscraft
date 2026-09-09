@@ -3,11 +3,11 @@
 
     <Include file="ItemEntry.lua"/>
 
-    <Frame name="SimscraftShoppingListItemEntryTemplate" mixin="SimscraftShoppingListItemEntryMixin" hyperlinksEnabled="true" virtual="true">
+    <Frame name="SimscraftShoppingListItemEntryTemplate" mixin="SimscraftShoppingListItemEntryMixin" virtual="true">
         <Size y="100"/>
 
         <Frames>
-			<Button parentKey="ItemButton">
+			<Button parentKey="ItemButton" propagateMouseInput="Both">
 				<Size x="50" y="50"/>
 				<Anchors>
 					<Anchor point="LEFT" x="40"/>
@@ -28,7 +28,7 @@
 					<KeyValue key="buttonArtKit" value="128-RedButton-Delete" type="string" />
 					<KeyValue key="tooltipText" value="DELETE" type="global"/>
 					<KeyValue key="tooltipTextColor" value="HIGHLIGHT_FONT_COLOR" type="global"/>
-					<KeyValue key="tooltipAnchor" value="ANCHOR_TOP" type="string"/>
+					<KeyValue key="tooltipAnchor" value="ANCHOR_RIGHT" type="string"/>
 				</KeyValues>
 			</Button>
 
@@ -45,8 +45,8 @@
         </Frames>
 
 		<Layers>
-			<Layer level="HIGHLIGHT">
-				<Texture parentKey="Highlight" atlas="housing-basic-panel-gradient-header-bg">
+			<Layer level="OVERLAY">
+				<Texture parentKey="Highlight" atlas="housing-basic-panel-gradient-header-bg" hidden="true">
 					<Anchors>
 						<Anchor point="TOPLEFT"/>
 						<Anchor point="BOTTOMRIGHT" y="3"/>
@@ -55,7 +55,7 @@
 				<Texture parentKey="HighlightBorder" atlas="TalkingHeads-Glow-TextSheen" setAllPoints="true" alpha="0.15"/>
 			</Layer>
 			<Layer level="ARTWORK">
-				<FontString parentKey="Name" font="GameFontWhite" text="Item name goes here" propagateMouseInputMask="Clicks">
+				<FontString parentKey="Name" font="GameFontWhite">
 					<Anchors>
 						<Anchor point="LEFT" relativeKey="$parent.ItemButton" relativePoint="RIGHT" x="10" />
 					</Anchors>
@@ -74,10 +74,10 @@
 
 		<Animations>
 			<AnimationGroup parentKey="FadeIn" looping="NONE" setToFinalAlpha="true">
-				<Alpha parentKey="Alpha" duration="0.75" fromAlpha="0" toAlpha="1" smoothing="IN"/>
+				<Alpha parentKey="Alpha" duration="0.25" fromAlpha="0" toAlpha="1" smoothing="IN_OUT"/>
 			</AnimationGroup>
 			<AnimationGroup parentKey="FadeOut" looping="NONE" setToFinalAlpha="true">
-				<Alpha parentKey="Alpha" duration="0.75" fromAlpha="1" toAlpha="0" smoothing="OUT"/>
+				<Alpha parentKey="Alpha" duration="0.35" fromAlpha="1" toAlpha="0" smoothing="OUT_IN"/>
 			</AnimationGroup>
 		</Animations>
 
@@ -86,9 +86,6 @@
 			<OnEnter method="OnEnter"/>
 			<OnLeave method="OnLeave"/>
 			<OnMouseUp method="OnMouseUp"/>
-			<OnHyperlinkClick method="OnHyperlinkClick" />
-			<OnHyperlinkEnter method="OnHyperlinkEnter"/>
-			<OnHyperlinkLeave method="OnHyperlinkLeave"/>
         </Scripts>
     </Frame>
 </Ui>
