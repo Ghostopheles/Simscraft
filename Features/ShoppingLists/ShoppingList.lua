@@ -105,6 +105,11 @@ function SimscraftShoppingListImportFrameMixin:Submit()
 
 	local name = strtrim(self.NameEditBox:GetText());
     local list = ShoppingListUtil.ParseShoppingListImport(self.EditBox:GetText(), name);
+	if not list then
+		internal.Print("Failed to import shopping list.");
+		return;
+	end
+
     internal.ShoppingListManager:AddShoppingList(name, list);
     self:Hide();
     PlaySound(LIST_IMPORT_SUCCESS_SOUNDKIT);

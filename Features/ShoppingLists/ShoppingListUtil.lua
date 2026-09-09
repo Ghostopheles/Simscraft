@@ -20,13 +20,8 @@ end
 ---@field Name string Unique name
 ---@field ImportedAt string Date in which the list was first imported
 
----@class SimscraftShoppingListUtil
-local ShoppingListUtil = {};
-
----@param shoppingListStr string
----@return SimscraftShoppingList
-function ShoppingListUtil.ParseShoppingListImport(shoppingListStr, name)
-    local list = {};
+local function ParseImportString(shoppingListStr)
+	local list = {};
 
     local split = strsplittable(";", shoppingListStr);
     for _, entry in ipairs(split) do
@@ -62,6 +57,19 @@ function ShoppingListUtil.ParseShoppingListImport(shoppingListStr, name)
 	};
 	ShoppingListUtil.UpdateFromRawList(shoppingList);
 	return shoppingList;
+end
+
+---@class SimscraftShoppingListUtil
+local ShoppingListUtil = {};
+
+---@param shoppingListStr string
+---@return SimscraftShoppingList?
+function ShoppingListUtil.ParseShoppingListImport(shoppingListStr, name)
+	local success, result = pcall(ParseImportString, shoppingListStr);
+	if not success then
+		return;
+	end
+	return result;
 end
 
 ---@param shoppingList SimscraftShoppingList
