@@ -23,6 +23,7 @@
 
 ## X-Curse-Project-ID: 1396392
 
+Constants.lua
 Enums.lua
 Events.lua
 Simscraft.lua

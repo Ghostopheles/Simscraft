@@ -7,7 +7,7 @@ local Events = internal.Events;
 local Registry = internal.Registry;
 local ShoppingListUtil = internal.ShoppingListUtil;
 
-local WISHLIST_NAME = "My Wishlist";
+local WISHLIST_NAME = internal.Constants.WISHLIST_NAME;
 
 ---@class SimscraftShoppingListManager
 local Manager = {};
