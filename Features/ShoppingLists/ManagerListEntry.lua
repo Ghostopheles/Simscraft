@@ -22,7 +22,12 @@ function SimscraftShoppingListManagerListEntryMixin:Init(data)
 	self.Name = name;
 
 	self.SizeText:SetFormattedText("%d unique items", data.UniqueItems);
-	self.DateText:SetFormattedText("Imported on %s", data.ImportedAt);
+
+	if name == internal.Constants.WISHLIST_NAME then
+		self.DateText:SetText("");
+	else
+		self.DateText:SetFormattedText("Imported on %s", data.ImportedAt);
+	end
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnEnter()
