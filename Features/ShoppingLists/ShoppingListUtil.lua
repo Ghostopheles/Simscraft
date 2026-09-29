@@ -19,8 +19,14 @@ end
 ---@field Items table<number, number> maps itemID to quantity
 ---@field Name string Unique name
 ---@field ImportedAt string Date in which the list was first imported
+---@field IsFulfilled boolean Whether or not the list is 'completed'
 
-local function ParseImportString(shoppingListStr)
+---@class SimscraftShoppingListUtil
+local ShoppingListUtil = {};
+
+---@param shoppingListStr string
+---@param name string
+local function ParseImportString(shoppingListStr, name)
 	local list = {};
 
     local split = strsplittable(";", shoppingListStr);
@@ -54,18 +60,16 @@ local function ParseImportString(shoppingListStr)
 		Items = {},
 		Name = name,
 		ImportedAt = GetCurrentDate(),
+		IsFulfilled = false
 	};
 	ShoppingListUtil.UpdateFromRawList(shoppingList);
 	return shoppingList;
 end
 
----@class SimscraftShoppingListUtil
-local ShoppingListUtil = {};
-
 ---@param shoppingListStr string
 ---@return SimscraftShoppingList?
 function ShoppingListUtil.ParseShoppingListImport(shoppingListStr, name)
-	local success, result = pcall(ParseImportString, shoppingListStr);
+	local success, result = pcall(ParseImportString, shoppingListStr, name);
 	if not success then
 		return;
 	end
