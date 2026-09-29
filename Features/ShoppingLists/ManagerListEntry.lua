@@ -40,8 +40,8 @@ end
 
 function SimscraftShoppingListManagerListEntryMixin:OnDeleteButtonPressed()
 	if not IsShiftKeyDown() then
-		internal.ShoppingListManager:ConfirmShoppingListDeletion(self.Name);
+		internal.ShoppingListManager.ConfirmShoppingListDeletion(self.Name);
 	else
-		internal.ShoppingListManager:RemoveShoppingList(self.Name);
+		internal.ShoppingListManager.RemoveShoppingList(self.Name);
 	end
 end

@@ -1,9 +1,13 @@
+local addonName = ...;
+
 ---@class SimscraftInternal
 local internal = select(2, ...);
 
 local Events = internal.Events;
 local Registry = internal.Registry;
 local ShoppingListUtil = internal.ShoppingListUtil;
+
+local WISHLIST_NAME = "My Wishlist";
 
 ---@class SimscraftShoppingListManager
 local Manager = {};
@@ -147,7 +151,7 @@ StaticPopupDialogs["SIMSCRAFT_DELETE_SHOPPING_LIST_CONFIRM"] = {
     button1 = PERKS_PROGRAM_CART_CLEAR_POPUP_CONFIRMATION,
     button2 = CANCEL,
     OnAccept = function(dialog)
-		Manager:RemoveShoppingList(dialog.data);
+		Manager.RemoveShoppingList(dialog.data);
 	end,
     hideOnEscape = true,
     timeout = 0,
@@ -161,7 +165,7 @@ if not SimscraftShoppingLists then
     SimscraftShoppingLists = {};
 end
 
-function Manager:AddShoppingList(name, shoppingList)
+function Manager.AddShoppingList(name, shoppingList)
     if SimscraftShoppingLists[name] then
         error(("A shopping list with the name '%s' already exists."):format(name));
     end
@@ -170,41 +174,41 @@ function Manager:AddShoppingList(name, shoppingList)
 	Registry:TriggerEvent(Events.SHOPPING_LIST_ADDED, shoppingList);
 end
 
-function Manager:RemoveShoppingList(name)
+function Manager.RemoveShoppingList(name)
     SimscraftShoppingLists[name] = nil;
 	Registry:TriggerEvent(Events.SHOPPING_LIST_REMOVED, name);
 end
 
-function Manager:GetShoppingLists()
+function Manager.GetShoppingLists()
     return SimscraftShoppingLists;
 end
 
 ---@param name string
 ---@return SimscraftShoppingList
-function Manager:GetShoppingList(name)
+function Manager.GetShoppingList(name)
 	return SimscraftShoppingLists[name];
 end
 
-function Manager:ShowShoppingList(name)
+function Manager.ShowShoppingList(name)
 	local list = SimscraftShoppingLists[name];
 	if name then
 		Registry:TriggerEvent(Events.SHOPPING_LIST_SHOW, list);
 	end
 end
 
-function Manager:SaveShoppingList(name, shoppingList)
+function Manager.SaveShoppingList(name, shoppingList)
 	SimscraftShoppingLists[name] = shoppingList;
 end
 
-function Manager:IsShoppingListNameAvailable(name)
+function Manager.IsShoppingListNameAvailable(name)
 	return SimscraftShoppingLists[name] == nil;
 end
 
-function Manager:ConfirmShoppingListDeletion(name)
+function Manager.ConfirmShoppingListDeletion(name)
 	StaticPopup_Show("SIMSCRAFT_DELETE_SHOPPING_LIST_CONFIRM", nil, nil, name);
 end
 
-function Manager:RenameShoppingList(oldName, newName)
+function Manager.RenameShoppingList(oldName, newName)
 	local oldList = SimscraftShoppingLists[oldName];
 	local renamed = CopyTable(oldList);
 	renamed.Name = newName;
@@ -256,6 +260,20 @@ function Manager.ToggleManagerFrame()
 	local f = SimscraftShoppingListManagerFrame;
 	f:SetShown(not f:IsShown());
 end
+
+------------
+
+local function TryCreateWishlist()
+	if not Manager.IsShoppingListNameAvailable(WISHLIST_NAME) then
+		-- player already has a wishlist
+		return;
+	end
+
+	local wishlist = ShoppingListUtil.CreateShoppingListFromRawList({}, WISHLIST_NAME);
+	Manager.SaveShoppingList(WISHLIST_NAME, wishlist);
+end
+
+EventUtil.ContinueOnAddOnLoaded(addonName, TryCreateWishlist);
 
 ------------
 
@@ -363,7 +381,7 @@ end
 function SimscraftShoppingListManagerFrameMixin:OnShoppingListSelected(listFrame, scrollToFrame)
 	self.SelectionBehavior:Select(listFrame);
 	local data = listFrame:GetData();
-	Manager:ShowShoppingList(data.Name);
+	Manager.ShowShoppingList(data.Name);
 	self.LastSelected = data.Name;
 
 	if scrollToFrame then
@@ -387,7 +405,7 @@ end
 function SimscraftShoppingListManagerFrameMixin:Populate(lists)
 	self:ResetDataProvider();
 
-	local lists = lists or Manager:GetShoppingLists();
+	local lists = lists or Manager.GetShoppingLists();
 	local items = {};
 	for name, list in pairs(lists) do
 		local keys = GetKeysArray(list.Items);

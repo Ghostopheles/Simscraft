@@ -80,7 +80,7 @@ function SimscraftShoppingListImportFrameMixin:Validate()
 		return false;
 	end
 
-	local nameAvailable = internal.ShoppingListManager:IsShoppingListNameAvailable(name);
+	local nameAvailable = internal.ShoppingListManager.IsShoppingListNameAvailable(name);
 	if not nameAvailable then
 		PlaySound(SOUNDKIT.ACCOUNT_STORE_CATEGORY_SELECT);
 		internal.Print(format("Shopping list name '%s' is already taken or is invalid.", name));
@@ -110,7 +110,7 @@ function SimscraftShoppingListImportFrameMixin:Submit()
 		return;
 	end
 
-    internal.ShoppingListManager:AddShoppingList(name, list);
+    internal.ShoppingListManager.AddShoppingList(name, list);
     self:Hide();
     PlaySound(LIST_IMPORT_SUCCESS_SOUNDKIT);
 end
@@ -228,13 +228,13 @@ end
 function SimscraftShoppingListFrameMixin:OnRenameEditBoxEnterPressed()
 	local header = self.Header;
 	local newName = header.RenameEditBox:GetText();
-	local isValidName = internal.ShoppingListManager:IsShoppingListNameAvailable(newName);
+	local isValidName = internal.ShoppingListManager.IsShoppingListNameAvailable(newName);
 	if not isValidName then
 		internal.Print("Invalid name"); --TODO: make this a good error
 		return;
 	end
 
-	internal.ShoppingListManager:RenameShoppingList(self.ActiveList.Name, newName);
+	internal.ShoppingListManager.RenameShoppingList(self.ActiveList.Name, newName);
 end
 
 function SimscraftShoppingListFrameMixin:SetNameEditModeEnabled(enabled)
@@ -256,7 +256,7 @@ function SimscraftShoppingListFrameMixin:SetNameEditModeEnabled(enabled)
 end
 
 function SimscraftShoppingListFrameMixin:OnShoppingListDeleteItem(itemID)
-	local shoppingList = internal.ShoppingListManager:GetShoppingList(self.ActiveList.Name);
+	local shoppingList = internal.ShoppingListManager.GetShoppingList(self.ActiveList.Name);
 	ShoppingListUtil.RemoveItemFromListByID(shoppingList, itemID);
 	self:RefreshItems(shoppingList.Items);
 end
