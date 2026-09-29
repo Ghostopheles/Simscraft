@@ -4,6 +4,7 @@
 	<Include file="ShoppingListUtil.lua"/>
 	<Include file="ItemEntry.xml"/>
     <Include file="ShoppingList.lua"/>
+	<Include file="ItemSearch.xml"/>
 
     <Frame name="SimscraftShoppingListImportFrame" parent="UIParent" inherits="PortraitFrameFlatTemplate" mixin="SimscraftShoppingListImportFrameMixin" frameStrata="FULLSCREEN_DIALOG">
         <Size x="350" y="125"/>
@@ -105,6 +106,20 @@
 					<KeyValue key="iconAtlas" value="Pencil-Icon" type="string" />
 					<KeyValue key="useAtlasSize" value="true" type="boolean" />
 					<KeyValue key="tooltipText" value="Rename" />
+				</KeyValues>
+			</Button>
+
+			<Button parentKey="AddItemButton" inherits="IconButtonTemplate">
+				<Size x="30" y="29"/>
+
+				<Anchors>
+					<Anchor point="RIGHT" relativeKey="$parent.Header" relativePoint="RIGHT" x="-20"/>
+				</Anchors>
+
+				<KeyValues>
+					<KeyValue key="iconAtlas" value="Garr_Building-AddFollowerPlus" type="string" />
+					<KeyValue key="useAtlasSize" value="true" type="boolean" />
+					<KeyValue key="tooltipText" value="Add Item" />
 				</KeyValues>
 			</Button>
 

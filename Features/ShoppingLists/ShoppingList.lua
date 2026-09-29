@@ -155,6 +155,10 @@ function SimscraftShoppingListFrameMixin:OnLoad()
 		self:OnRenameButtonClicked();
 	end);
 
+	self.AddItemButton:SetScript("OnClick", function()
+		self:OnAddItemButtonClicked();
+	end);
+
 	local header = self.Header;
 	header.RenameEditBox:SetScript("OnEnterPressed", function()
 		self:OnRenameEditBoxEnterPressed();
@@ -173,6 +177,10 @@ function SimscraftShoppingListFrameMixin:OnShoppingListShow(list)
 	self:RefreshItems(list.Items);
 
 	self:SetNameEditModeEnabled(false);
+
+	local isWishlist = list.Name == internal.Constants.WISHLIST_NAME;
+	self.RenameButton:SetShown(not isWishlist);
+	self.AddItemButton:SetShown(isWishlist);
 end
 
 function SimscraftShoppingListFrameMixin:OnShoppingListRenamed(oldName, newName)
@@ -223,6 +231,10 @@ end
 
 function SimscraftShoppingListFrameMixin:OnRenameButtonClicked()
 	self:SetNameEditModeEnabled(true);
+end
+
+function SimscraftShoppingListFrameMixin:OnAddItemButtonClicked()
+
 end
 
 function SimscraftShoppingListFrameMixin:OnRenameEditBoxEnterPressed()
