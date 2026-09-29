@@ -13,12 +13,19 @@ end
 
 ------------
 
+--- shopping list import code format
+--- creatureID1,creatureID2:itemID1-quantity,itemID2-quantity
+
+---@class SimscraftShoppingListVendorTable
+---@field ItemID number
+---@field Quantity number
+
 ---@class SimscraftShoppingList
----@field RawList table<number, {ItemID: number, Quantity: number}[]> maps creatureID to list of itemIDs and quantities
+---@field RawList table<number, SimscraftShoppingListVendorTable[]> maps creatureID to list of itemIDs and quantities
 ---@field Vendors table<number, number[]> maps creatureID to list of itemIDs
 ---@field Items table<number, number> maps itemID to quantity
 ---@field Name string Unique name
----@field ImportedAt string Date in which the list was first imported
+---@field ImportedAt string | osdate Date in which the list was first imported
 ---@field IsFulfilled boolean Whether or not the list is 'completed'
 
 ---@class SimscraftShoppingListUtil
@@ -67,10 +74,12 @@ local function ParseImportString(shoppingListStr, name)
 end
 
 ---@param shoppingListStr string
+---@param name string
 ---@return SimscraftShoppingList?
 function ShoppingListUtil.ParseShoppingListImport(shoppingListStr, name)
 	local success, result = pcall(ParseImportString, shoppingListStr, name);
 	if not success then
+		internal.Print("An error occurred while importing this shopping list: " .. result);
 		return;
 	end
 	return result;
@@ -104,6 +113,7 @@ function ShoppingListUtil.CreateShoppingListFromRawList(rawList, name)
 		Items = {},
 		Name = name,
 		ImportedAt = GetCurrentDate(),
+		IsFulfilled = false
 	};
 	ShoppingListUtil.UpdateFromRawList(shoppingList);
 	return shoppingList;
@@ -145,7 +155,6 @@ function ShoppingListUtil.GetTargetItemQuantityByID(shoppingList, itemID)
 			end
 		end
 	end
-	ShoppingListUtil.UpdateFromRawList(shoppingList);
 end
 
 ---@param shoppingList SimscraftShoppingList
@@ -162,26 +171,6 @@ end
 ---@param shoppingList SimscraftShoppingList
 function ShoppingListUtil.IsVendorInShoppingList(shoppingList, creatureID)
 	return ShoppingListUtil.GetItemsForVendor(shoppingList, creatureID) ~= nil;
-end
-
----@param shoppingList SimscraftShoppingList
-function ShoppingListUtil.UpdateVendors(shoppingList)
-	local newVendors = {};
-    for vendor, items in pairs(shoppingList.Vendors) do
-        local newItems = {};
-        for _, itemID in ipairs(items) do
-            if ShoppingListUtil.GetTargetItemQuantityByID(shoppingList, itemID) > 0 then
-                tinsert(newItems, itemID);
-            end
-        end
-        newVendors[vendor] = newItems;
-    end
-
-    if #newVendors == 0 then
-        newVendors = nil;
-    end
-
-    shoppingList.Vendors = newVendors;
 end
 
 ------------
