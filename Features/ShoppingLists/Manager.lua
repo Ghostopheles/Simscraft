@@ -399,7 +399,11 @@ function SimscraftShoppingListManagerFrameMixin:Populate(lists)
 	end
 
 	table.sort(items, function(a, b)
-		return a.Name > b.Name;
+		if a.Name == internal.Constants.WISHLIST_NAME or not b then
+			return true;
+		end
+
+		return a.Name < b.Name;
 	end);
 
 	self.DataProvider:InsertTable(items);

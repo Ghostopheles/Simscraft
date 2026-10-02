@@ -12,19 +12,19 @@
 			<Layer level="ARTWORK">
 				<FontString parentKey="NameText" font="GameFontWhite" justifyH="LEFT" maxLines="1">
 					<Anchors>
-						<Anchor point="LEFT" x="10"/>
+						<Anchor point="TOPLEFT" x="18" y="-13"/>
 					</Anchors>
 				</FontString>
 
-				<FontString parentKey="SizeText" font="GameFontWhite" justifyH="RIGHT" maxLines="1">
+				<FontString parentKey="SizeText" font="GameFontWhite" justifyH="LEFT" maxLines="1">
 					<Anchors>
-						<Anchor point="RIGHT" x="-55" y="7"/>
+						<Anchor point="BOTTOMLEFT" x="18" y="13"/>
 					</Anchors>
 				</FontString>
 
-				<FontString parentKey="DateText" font="GameFontWhite" justifyH="RIGHT" maxLines="1" text="CHINA">
+				<FontString parentKey="DateText" font="GameFontWhite" justifyH="RIGHT" maxLines="1">
 					<Anchors>
-						<Anchor point="RIGHT" x="-55" y="-7"/>
+						<Anchor point="BOTTOMRIGHT" x="-58" y="13"/>
 					</Anchors>
 				</FontString>
 			</Layer>
@@ -43,7 +43,7 @@
 			<Button parentKey="DeleteButton" inherits="UIButtonTemplate">
 				<Size x="25" y="25"/>
 				<Anchors>
-					<Anchor point="RIGHT" x="-20"/>
+					<Anchor point="RIGHT" x="-18"/>
 				</Anchors>
 				<KeyValues>
 					<KeyValue key="buttonArtKit" value="128-RedButton-Delete" type="string" />
