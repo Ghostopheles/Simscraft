@@ -272,10 +272,17 @@ function SimscraftShoppingListFrameMixin:OnShoppingListAddItem(itemID, quantity)
 	local shoppingList = internal.ShoppingListManager.GetShoppingList(self.ActiveList.Name);
 	ShoppingListUtil.AddItemToListByID(shoppingList, itemID, quantity);
 	self:RefreshItems(shoppingList.Items);
+	self:ScrollToItemByID(itemID);
 end
 
 function SimscraftShoppingListFrameMixin:OnShoppingListDeleteItem(itemID)
 	local shoppingList = internal.ShoppingListManager.GetShoppingList(self.ActiveList.Name);
 	ShoppingListUtil.RemoveItemFromListByID(shoppingList, itemID);
 	self:RefreshItems(shoppingList.Items);
+end
+
+function SimscraftShoppingListFrameMixin:ScrollToItemByID(itemID)
+	self.Content.ScrollBox:ScrollToNearestByPredicate(function(elementData)
+		return elementData.ItemID == itemID;
+	end);
 end
