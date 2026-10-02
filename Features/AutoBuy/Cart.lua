@@ -414,10 +414,6 @@ function Cart.UpdatePurchaseErrors(totalCost, totalExtendedCost)
 	end
 end
 
-local function FormatGoldString(amount)
-
-end
-
 function Cart.GetPurchaseErrorString()
 	local errs = Cart.GetPurchaseErrors();
 	if #errs == 0 then
