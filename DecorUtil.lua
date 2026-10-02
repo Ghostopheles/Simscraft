@@ -17,10 +17,20 @@ function DecorUtil.GetAmountOwnedByItem(itemInfo)
 end
 
 ---@param itemInfo ItemInfo
+---@return number?
 function DecorUtil.GetDecorRecordIDByItem(itemInfo)
 	local entryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(itemInfo);
 	if entryInfo then
 		return entryInfo.recordID;
+	end
+end
+
+---@param recordID number
+---@return number?
+function DecorUtil.GetDecorItemIDByRecordID(recordID)
+	local entryInfo = C_HousingCatalog.GetCatalogEntryInfoByRecordID(Enum.HousingCatalogEntryType.Decor, recordID);
+	if entryInfo then
+		return entryInfo.itemID;
 	end
 end
 

@@ -149,6 +149,7 @@ function SimscraftShoppingListFrameMixin:OnLoad()
 
 	Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, self.OnShoppingListAdded, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SHOW, self.OnShoppingListShow, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_ADD_ITEM, self.OnShoppingListAddItem, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_DELETE_ITEM, self.OnShoppingListDeleteItem, self);
 
 	self.RenameButton:SetScript("OnClick", function()
@@ -234,7 +235,7 @@ function SimscraftShoppingListFrameMixin:OnRenameButtonClicked()
 end
 
 function SimscraftShoppingListFrameMixin:OnAddItemButtonClicked()
-
+	Registry:TriggerEvent(Events.DECOR_SEARCH_SHOW);
 end
 
 function SimscraftShoppingListFrameMixin:OnRenameEditBoxEnterPressed()
@@ -265,6 +266,12 @@ function SimscraftShoppingListFrameMixin:SetNameEditModeEnabled(enabled)
 		editBox:Hide();
 		renameButton:Show();
 	end
+end
+
+function SimscraftShoppingListFrameMixin:OnShoppingListAddItem(itemID, quantity)
+	local shoppingList = internal.ShoppingListManager.GetShoppingList(self.ActiveList.Name);
+	ShoppingListUtil.AddItemToListByID(shoppingList, itemID, quantity);
+	self:RefreshItems(shoppingList.Items);
 end
 
 function SimscraftShoppingListFrameMixin:OnShoppingListDeleteItem(itemID)

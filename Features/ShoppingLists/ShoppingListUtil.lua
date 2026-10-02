@@ -126,6 +126,7 @@ function ShoppingListUtil.SetTargetItemQuantityByID(shoppingList, itemID, amount
 		for _, itemEntry in ipairs(items) do
 			if itemEntry.ItemID == itemID then
 				itemEntry.Quantity = amount;
+				break;
 			end
 		end
 	end
@@ -146,6 +147,7 @@ function ShoppingListUtil.AdjustTargetItemQuantityByID(shoppingList, itemID, amo
 end
 
 ---@param shoppingList SimscraftShoppingList
+---@param itemID number
 function ShoppingListUtil.GetTargetItemQuantityByID(shoppingList, itemID)
 	local raw = shoppingList.RawList;
 	for _, items in ipairs(raw) do
@@ -158,9 +160,17 @@ function ShoppingListUtil.GetTargetItemQuantityByID(shoppingList, itemID)
 end
 
 ---@param shoppingList SimscraftShoppingList
+---@param itemID number
 function ShoppingListUtil.RemoveItemFromListByID(shoppingList, itemID)
 	ShoppingListUtil.SetTargetItemQuantityByID(shoppingList, itemID, 0);
-	shoppingList.Items[itemID] = nil;
+end
+
+---@param shoppingList SimscraftShoppingList
+---@param itemID number
+---@param quantity? number
+function ShoppingListUtil.AddItemToListByID(shoppingList, itemID, quantity)
+	quantity = quantity or 1;
+	ShoppingListUtil.SetTargetItemQuantityByID(shoppingList, itemID, quantity);
 end
 
 ---@param shoppingList SimscraftShoppingList

@@ -98,7 +98,7 @@
 	</Frame>
 
 
-	<Frame name="SimscraftItemSearchTest" parent="UIParent" inherits="SimscraftDecorItemSearchTemplate">
+	<Frame name="SimscraftItemSearchTest" parent="UIParent" inherits="SimscraftDecorItemSearchTemplate" frameStrata="FULLSCREEN_DIALOG" hidden="true">
 		<Size x="400" y="500"/>
 		<Anchors>
 			<Anchor point="CENTER"/>

@@ -212,10 +212,18 @@ function SimscraftDecorItemSearchMixin:OnLoad()
 	content.ScrollBox.canInterpolateScroll = true;
 
     ScrollUtil.InitScrollBoxListWithScrollBar(content.ScrollBox, content.ScrollBar, content.ScrollView);
+
+	Registry:RegisterCallback(Events.DECOR_SEARCH_SHOW, self.OnDecorSearchShow, self);
+	Registry:RegisterCallback(Events.DECOR_SEARCH_HIDE, self.OnDecorSearchHide, self);
 end
 
 function SimscraftDecorItemSearchMixin:OnTextChanged(userInput)
 	if not userInput then
+		return;
+	end
+
+	if self:GetText() == "" then
+		self:ResetDataProvider();
 		return;
 	end
 
@@ -237,12 +245,16 @@ function SimscraftDecorItemSearchMixin:OnEnterPressed()
 	local selections = self.SelectionBehavior:GetSelectedElementData();
 	local selected = selections[1];
 	if selected then
-		Registry:TriggerEvent(Events.DECOR_SEARCH_ITEM_SELECTED, selected.recordID);
+		local itemID = internal.DecorUtil.GetDecorItemIDByRecordID(selected.recordID);
+		if itemID then
+			Registry:TriggerEvent(Events.SHOPPING_LIST_ADD_ITEM, itemID, 1);
+		end
 	end
+	self:Hide();
 end
 
 function SimscraftDecorItemSearchMixin:OnEscapePressed()
-
+	self:Hide();
 end
 
 function SimscraftDecorItemSearchMixin:OnSearchResultsUpdated()
@@ -260,6 +272,17 @@ function SimscraftDecorItemSearchMixin:OnSearchResultsUpdated()
 	end
 
 	self.SelectionBehavior:SelectFirstElementData();
+end
+
+function SimscraftDecorItemSearchMixin:OnDecorSearchShow()
+	self:ResetDataProvider();
+	self:Show();
+	self.SearchBox:SetText("");
+	self.SearchBox:SetFocus();
+end
+
+function SimscraftDecorItemSearchMixin:OnDecorSearchHide()
+	self:Hide();
 end
 
 function SimscraftDecorItemSearchMixin:ResetDataProvider()
