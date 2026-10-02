@@ -140,9 +140,21 @@ local function InvalidateItemCache()
 	CACHED_NUM_LISTS_PER_ITEM = {};
 end
 
-Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, InvalidateItemCache);
-Registry:RegisterCallback(Events.SHOPPING_LIST_REMOVED, InvalidateItemCache);
-Registry:RegisterCallback(Events.SHOPPING_LIST_DELETE_ITEM, InvalidateItemCache);
+local function OnShoppingListModified(_, ...)
+	InvalidateItemCache();
+
+	local args = {...};
+	RunNextFrame(function()
+		Registry:TriggerEvent(Events.SHOPPING_LIST_MODIFIED, unpack(args));
+	end);
+end
+
+Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, OnShoppingListModified);
+Registry:RegisterCallback(Events.SHOPPING_LIST_REMOVED, OnShoppingListModified);
+Registry:RegisterCallback(Events.SHOPPING_LIST_RENAMED, OnShoppingListModified);
+Registry:RegisterCallback(Events.SHOPPING_LIST_ADD_ITEM, OnShoppingListModified);
+Registry:RegisterCallback(Events.SHOPPING_LIST_MOVE_ITEM, OnShoppingListModified);
+Registry:RegisterCallback(Events.SHOPPING_LIST_DELETE_ITEM, OnShoppingListModified);
 
 ------------
 
@@ -315,6 +327,7 @@ function SimscraftShoppingListManagerFrameMixin:OnLoad()
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SELECTED, self.OnShoppingListSelected, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_RENAMED, self.OnShoppingListRenamed, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_IMPORT_FRAME_VISIBILITY_CHANGED, self.OnImportFrameVisibilityChanged, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_MODIFIED, self.OnShoppingListModified, self);
 
 	local highlight = content.ScrollBox.SelectionHighlight;
 	self.SelectionHighlight = highlight;
@@ -362,6 +375,10 @@ function SimscraftShoppingListManagerFrameMixin:OnShoppingListRemoved(name)
 	end
 end
 
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListModified(shoppingList)
+	self:Populate();
+end
+
 function SimscraftShoppingListManagerFrameMixin:OnShoppingListRenamed(oldName, newName)
 	self:Populate();
 	Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, newName);
@@ -395,6 +412,7 @@ function SimscraftShoppingListManagerFrameMixin:Populate(lists)
 			Name = name,
 			UniqueItems = #keys,
 			ImportedAt = list.ImportedAt,
+			LastUpdatedAt = list.LastUpdatedAt
 		});
 	end
 

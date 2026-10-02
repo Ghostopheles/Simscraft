@@ -22,9 +22,9 @@
 					</Anchors>
 				</FontString>
 
-				<FontString parentKey="DateText" font="GameFontWhite" justifyH="RIGHT" maxLines="1">
+				<FontString parentKey="LastUpdatedText" font="GameFontWhite" justifyH="RIGHT" maxLines="1">
 					<Anchors>
-						<Anchor point="BOTTOMRIGHT" x="-58" y="13"/>
+						<Anchor point="TOPRIGHT" x="-18" y="-13"/>
 					</Anchors>
 				</FontString>
 			</Layer>
@@ -48,7 +48,6 @@
 				<KeyValues>
 					<KeyValue key="buttonArtKit" value="128-RedButton-Delete" type="string" />
 					<KeyValue key="tooltipText" value="DELETE" type="global"/>
-					<KeyValue key="tooltipTextColor" value="HIGHLIGHT_FONT_COLOR" type="global"/>
 					<KeyValue key="tooltipAnchor" value="ANCHOR_TOP" type="string"/>
 				</KeyValues>
 			</Button>
@@ -56,9 +55,7 @@
 
 		<Scripts>
 			<OnLoad method="OnLoad"/>
-			<OnEnter method="OnEnter"/>
-			<OnLeave method="OnLeave"/>
-			<OnMouseDown method="OnMouseDown"/>
+			<OnShow method="OnShow"/>
 			<OnMouseUp method="OnMouseUp"/>
 		</Scripts>
 

@@ -19,6 +19,7 @@ local Registry = internal.Registry;
 ---@field Items table<number, SimscraftShoppingListItemEntry> maps itemID to item entry
 ---@field Name string Unique name
 ---@field ImportedAt number Timestamp at which the list was first imported
+---@field LastUpdatedAt number Timestsamp Timestamp for which the list was last updated
 ---@field IsFulfilled boolean Whether or not the list is 'completed'
 ---@field MaxOrderIndex number
 
@@ -30,6 +31,8 @@ local ShoppingListUtil = {};
 local function ParseImportString(shoppingListStr, name)
 	local list = {};
 	local lastOrderIndex = 0;
+
+	local timestamp = time();
 
     local split = strsplittable(";", shoppingListStr);
     for _, entry in ipairs(split) do
@@ -48,7 +51,7 @@ local function ParseImportString(shoppingListStr, name)
 				list[itemID] = {
 					ItemID = itemID,
 					Quantity = quantity,
-					AddedAt = time(),
+					AddedAt = timestamp,
 					OrderIndex = orderIndex
 				};
 				lastOrderIndex = orderIndex;
@@ -59,7 +62,8 @@ local function ParseImportString(shoppingListStr, name)
 	local shoppingList = {
 		Items = list,
 		Name = name,
-		ImportedAt = time(),
+		ImportedAt = timestamp,
+		LastUpdatedAt = timestamp,
 		IsFulfilled = false,
 		MaxOrderIndex = lastOrderIndex
 	};
@@ -72,6 +76,10 @@ local function CollapseOrderIndices(shoppingList, start)
 			entry.OrderIndex = entry.OrderIndex - 1;
 		end
 	end
+end
+
+local function UpdateLastUpdatedTimestamp(shoppingList)
+	shoppingList.LastUpdatedAt = time();
 end
 
 ---@param shoppingListStr string
@@ -89,10 +97,12 @@ end
 ---@param name string
 ---@return SimscraftShoppingList
 function ShoppingListUtil.CreateShoppingList(name)
+	local timestamp = time();
 	local shoppingList = {
 		Items = {},
 		Name = name,
-		ImportedAt = time(),
+		ImportedAt = timestamp,
+		LastUpdatedAt = timestamp,
 		IsFulfilled = false,
 		MaxOrderIndex = 0
 	};
@@ -105,6 +115,7 @@ end
 function ShoppingListUtil.SetTargetItemQuantityByID(shoppingList, itemID, quantity)
 	if shoppingList.Items[itemID] then
 		shoppingList.Items[itemID].Quantity = quantity;
+		UpdateLastUpdatedTimestamp(shoppingList);
 	end
 end
 
@@ -113,6 +124,7 @@ end
 ---@param amount number
 function ShoppingListUtil.AdjustTargetItemQuantityByID(shoppingList, itemID, amount)
 	shoppingList.Items[itemID].Quantity = (shoppingList.Items[itemID].Quantity or 0) + amount;
+	UpdateLastUpdatedTimestamp(shoppingList);
 end
 
 ---@param shoppingList SimscraftShoppingList
@@ -135,6 +147,7 @@ function ShoppingListUtil.RemoveItemFromListByID(shoppingList, itemID)
 
 	shoppingList.MaxOrderIndex = shoppingList.MaxOrderIndex - 1;
 	CollapseOrderIndices(shoppingList, orderIndex);
+	UpdateLastUpdatedTimestamp(shoppingList);
 end
 
 ---@param shoppingList SimscraftShoppingList
@@ -158,6 +171,7 @@ function ShoppingListUtil.AddItemToListByID(shoppingList, itemID, quantity)
 	};
 	shoppingList.MaxOrderIndex = orderIndex;
 	shoppingList.Items[itemID] = newEntry;
+	UpdateLastUpdatedTimestamp(shoppingList);
 end
 
 ------------

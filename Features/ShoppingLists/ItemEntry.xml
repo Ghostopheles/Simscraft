@@ -27,7 +27,6 @@
 				<KeyValues>
 					<KeyValue key="buttonArtKit" value="128-RedButton-Delete" type="string" />
 					<KeyValue key="tooltipText" value="DELETE" type="global"/>
-					<KeyValue key="tooltipTextColor" value="HIGHLIGHT_FONT_COLOR" type="global"/>
 					<KeyValue key="tooltipAnchor" value="ANCHOR_RIGHT" type="string"/>
 				</KeyValues>
 			</Button>

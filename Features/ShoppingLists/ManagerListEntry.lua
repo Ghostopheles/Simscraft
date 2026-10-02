@@ -6,6 +6,29 @@ local Registry = internal.Registry;
 
 ------------
 
+local function FormatTimestamp(timestamp)
+	return date("%m/%d/%y", timestamp);
+end
+
+local timeFormatter = CreateFromMixins(SecondsFormatterMixin);
+timeFormatter:Init(
+	SecondsFormatterConstants.ZeroApproximationThreshold,
+	SecondsFormatter.Abbreviation.None,
+	SecondsFormatterConstants.DontRoundUpLastUnit,
+	SecondsFormatterConstants.ConvertToLower,
+	SecondsFormatterConstants.RoundUpIntervals
+);
+timeFormatter:SetDesiredUnitCount(2);
+timeFormatter:SetMinInterval(SecondsFormatter.Interval.Minutes);
+timeFormatter:SetStripIntervalWhitespace(false);
+
+local function FormatLastUpdatedTimestamp(timestamp)
+	local diff = time() - timestamp;
+	return timeFormatter:Format(diff);
+end
+
+------------
+
 SimscraftShoppingListManagerListEntryMixin = {};
 
 function SimscraftShoppingListManagerListEntryMixin:OnLoad()
@@ -23,23 +46,22 @@ function SimscraftShoppingListManagerListEntryMixin:Init(data)
 
 	self.SizeText:SetFormattedText("%d unique items", data.UniqueItems);
 
-	if name == internal.Constants.WISHLIST_NAME then
-		self.DateText:SetText("");
-		self.DeleteButton:Hide();
-	else
-		local formattedDate = date("%m/%d/%y", data.ImportedAt);
-		self.DateText:SetFormattedText("Created on %s", formattedDate);
-		self.DeleteButton:Show();
+	local isWishlist = name == internal.Constants.WISHLIST_NAME;
+	self.DeleteButton:SetShown(not isWishlist);
+	self.LastUpdatedText:SetShown(isWishlist);
+
+	if isWishlist then
+		self:UpdateLastUpdatedTimestamp(data);
 	end
 end
 
-function SimscraftShoppingListManagerListEntryMixin:OnEnter()
-end
+function SimscraftShoppingListManagerListEntryMixin:OnShow()
+	if not self.GetData then
+		return;
+	end
 
-function SimscraftShoppingListManagerListEntryMixin:OnLeave()
-end
-
-function SimscraftShoppingListManagerListEntryMixin:OnMouseDown()
+	local data = self:GetData();
+	self:UpdateLastUpdatedTimestamp(data);
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnMouseUp()
@@ -52,4 +74,9 @@ function SimscraftShoppingListManagerListEntryMixin:OnDeleteButtonPressed()
 	else
 		internal.ShoppingListManager.RemoveShoppingList(self.Name);
 	end
+end
+
+function SimscraftShoppingListManagerListEntryMixin:UpdateLastUpdatedTimestamp(data)
+	local lastUpdatedAt = FormatLastUpdatedTimestamp(data.LastUpdatedAt);
+	self.LastUpdatedText:SetFormattedText("Last updated %s ago", lastUpdatedAt);
 end
