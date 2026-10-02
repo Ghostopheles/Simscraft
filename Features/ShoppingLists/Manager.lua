@@ -210,6 +210,7 @@ end
 function Manager.ShowShoppingList(name)
 	local list = SimscraftShoppingLists[name];
 	if name then
+		SimscraftShoppingListManagerFrame:Show();
 		Registry:TriggerEvent(Events.SHOPPING_LIST_SHOW, list);
 	end
 end
@@ -343,41 +344,33 @@ function SimscraftShoppingListManagerFrameMixin:OnShow()
 	self:Populate();
 end
 
-function SimscraftShoppingListManagerFrameMixin:OnShoppingListAdded(newList)
-	self:Populate();
-	local frame = self.Content.ScrollBox:FindFrameByPredicate(function(data)
-		return data.Name == newList.Name;
-	end);
-	if frame then
-		local scrollToFrame = true;
-		self:OnShoppingListSelected(frame, scrollToFrame);
-	end
+function SimscraftShoppingListManagerFrameMixin:OnHide()
+	Registry:TriggerEvent(Events.DECOR_SEARCH_HIDE);
 end
 
-function SimscraftShoppingListManagerFrameMixin:OnShoppingListRemoved()
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListAdded(newList)
 	self:Populate();
+	Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, newList.Name);
+end
+
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListRemoved(name)
+	self:Populate();
+	local selection = self.SelectionBehavior;
+
+	local selected = selection:GetFirstSelectedElementData();
+	if selected and selected.Name == name then
+		selection:SelectOffsetElementData(-1);
+		self:ScrollToSelection();
+	end
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnShoppingListRenamed(oldName, newName)
 	self:Populate();
-	local frame = self.Content.ScrollBox:FindFrameByPredicate(function(data)
-		return data.Name == newName;
-	end);
-	if frame then
-		local scrollToFrame = true;
-		self:OnShoppingListSelected(frame, scrollToFrame);
-	end
+	Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, newName);
 end
 
-function SimscraftShoppingListManagerFrameMixin:OnShoppingListSelected(listFrame, scrollToFrame)
-	self.SelectionBehavior:Select(listFrame);
-	local data = listFrame:GetData();
-	Manager.ShowShoppingList(data.Name);
-	self.LastSelected = data.Name;
-
-	if scrollToFrame then
-		self.Content.ScrollBox:ScrollToFrame(listFrame);
-	end
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListSelected(name)
+	self:SelectListByName(name);
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnImportButtonClicked()
@@ -394,6 +387,7 @@ function SimscraftShoppingListManagerFrameMixin:ResetDataProvider()
 end
 
 function SimscraftShoppingListManagerFrameMixin:Populate(lists)
+	DevTools_Dump(self.SelectionBehavior:GetFirstSelectedElementData());
 	self:ResetDataProvider();
 
 	local lists = lists or Manager.GetShoppingLists();
@@ -421,27 +415,32 @@ function SimscraftShoppingListManagerFrameMixin:SetFrameSelected(frame)
 	self.SelectionHighlight:Show();
 end
 
-function SimscraftShoppingListManagerFrameMixin:CheckSelectionAfterLoad()
+function SimscraftShoppingListManagerFrameMixin:ScrollToSelection()
+	local selection = self.SelectionBehavior;
 	local scrollBox = self.Content.ScrollBox;
-	if not self.SelectionBehavior:HasSelection() then
-		if self.LastSelected then
-			local frame = scrollBox:FindFrameByPredicate(function(data)
-				return data.Name == self.LastSelected;
-			end);
-			if frame then
-				local scrollToFrame = true;
-				self:OnShoppingListSelected(frame, scrollToFrame);
-				return;
-			end
-		end
 
-		local numFrames = scrollBox:GetFrameCount();
-		if numFrames > 0 then
-			local firstFrame = self.Content.ScrollBox:GetFrames()[1];
-			if firstFrame then
-				self:OnShoppingListSelected(firstFrame);
-				self.Content.ScrollBox:ScrollToBegin();
-			end
+	local selected = selection:GetFirstSelectedElementData();
+	if selected then
+		local alignment = ScrollBoxConstants.AlignNearest;
+		scrollBox:ScrollToElementData(selected, alignment);
+	end
+end
+
+function SimscraftShoppingListManagerFrameMixin:SelectListByName(name)
+	local selection = self.SelectionBehavior;
+	selection:SelectFirstElementData(function(elementData)
+		return elementData.Name == name;
+	end);
+	self:ScrollToSelection();
+	Manager.ShowShoppingList(name);
+end
+
+function SimscraftShoppingListManagerFrameMixin:CheckSelectionAfterLoad()
+	local selection = self.SelectionBehavior;
+	if not selection:HasSelection() then
+		local first = self.DataProvider:Find(1);
+		if first then
+			Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, first.Name);
 		end
 	end
 end

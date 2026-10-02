@@ -25,8 +25,10 @@ function SimscraftShoppingListManagerListEntryMixin:Init(data)
 
 	if name == internal.Constants.WISHLIST_NAME then
 		self.DateText:SetText("");
+		self.DeleteButton:Hide();
 	else
 		self.DateText:SetFormattedText("Imported on %s", data.ImportedAt);
+		self.DeleteButton:Show();
 	end
 end
 
