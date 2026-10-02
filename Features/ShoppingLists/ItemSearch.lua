@@ -237,8 +237,24 @@ function SimscraftDecorItemSearchMixin:OnTextChanged(userInput)
 end
 
 function SimscraftDecorItemSearchMixin:OnArrowPressed(key)
-	local offset = key == "DOWN" and 1 or -1;
-	self.SelectionBehavior:SelectOffsetElementData(offset);
+	local selection = self.SelectionBehavior;
+	local scrollBox = self.SearchResults.ScrollBox;
+
+	if selection:IsFirstElementDataSelected() and key == "UP" then
+		selection:SelectLastElementData();
+	elseif selection:IsLastElementDataSelected() and key == "DOWN" then
+		selection:SelectFirstElementData();
+	else
+		local offset = key == "DOWN" and 1 or -1;
+		selection:SelectOffsetElementData(offset);
+	end
+
+	local selections = selection:GetSelectedElementData();
+	local selected = selections[1];
+	if selected then
+		local alignment = ScrollBoxConstants.AlignNearest;
+		scrollBox:ScrollToElementData(selected, alignment);
+	end
 end
 
 function SimscraftDecorItemSearchMixin:OnEnterPressed()
