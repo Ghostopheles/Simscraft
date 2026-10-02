@@ -450,9 +450,32 @@ function Cart.GetPurchaseErrorString()
 	return errString .. ".";
 end
 
+---@param itemLink string
+---@return number
+function Cart.GetOwnedItemQuantity(itemLink)
+	local includeBank = true;
+	local includeUses = false;
+	local includeReagentBank = true;
+	local includeAccountBank = true;
+	return C_Item.GetItemCount(
+		itemLink,
+		includeBank,
+		includeUses,
+		includeReagentBank,
+		includeAccountBank
+	);
+end
+
 function Cart.GetPlayerCurrencyAmount(currencyLink)
-	local currencyInfo = C_CurrencyInfo.GetCurrencyInfoFromLink(currencyLink);
-	return currencyInfo.quantity;
+	local linkType = LinkUtil.ExtractLink(currencyLink);
+	if linkType == LinkTypes.Currency then
+		local currencyInfo = C_CurrencyInfo.GetCurrencyInfoFromLink(currencyLink);
+		return currencyInfo.quantity;
+	elseif linkType == LinkTypes.Item then
+		return Cart.GetOwnedItemQuantity(currencyLink);
+	end
+
+	return 0;
 end
 
 function Cart.CanPlayerAffordPurchase()
