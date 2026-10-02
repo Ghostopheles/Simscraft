@@ -447,7 +447,7 @@ function Cart.GetPurchaseErrorString()
 		errString = errString .. str;
 	end
 
-	return errString .. ".";
+	return errString;
 end
 
 ---@param itemLink string
