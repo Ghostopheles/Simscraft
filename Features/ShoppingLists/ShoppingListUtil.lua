@@ -6,25 +6,21 @@ local Registry = internal.Registry;
 
 ------------
 
-local function GetCurrentDate()
-	local format = "%m/%d/%y";
-	return date(format);
-end
-
-------------
-
 --- shopping list import code format
 --- creatureID1,creatureID2:itemID1-quantity,itemID2-quantity
 
----@class SimscraftShoppingListVendorTable
+---@class SimscraftShoppingListItemEntry
 ---@field ItemID number
 ---@field Quantity number
+---@field AddedAt number Timestamp at which the item was added to the shopping list
+---@field OrderIndex number
 
 ---@class SimscraftShoppingList
----@field Items table<number, number> maps itemID to quantity
+---@field Items table<number, SimscraftShoppingListItemEntry> maps itemID to item entry
 ---@field Name string Unique name
----@field ImportedAt string | osdate Date in which the list was first imported
+---@field ImportedAt number Timestamp at which the list was first imported
 ---@field IsFulfilled boolean Whether or not the list is 'completed'
+---@field MaxOrderIndex number
 
 ---@class SimscraftShoppingListUtil
 local ShoppingListUtil = {};
@@ -33,6 +29,7 @@ local ShoppingListUtil = {};
 ---@param name string
 local function ParseImportString(shoppingListStr, name)
 	local list = {};
+	local lastOrderIndex = 0;
 
     local split = strsplittable(";", shoppingListStr);
     for _, entry in ipairs(split) do
@@ -42,17 +39,39 @@ local function ParseImportString(shoppingListStr, name)
         local items = strsplittable(",", iids);
         for _, itemEntry in ipairs(items) do
             local itemID, quantity = strsplit("-", itemEntry);
-            list[itemID] = tonumber(quantity) or 1;
+			itemID = tonumber(itemID);
+            quantity = tonumber(quantity) or 1;
+
+
+			if not list[itemID] then
+				local orderIndex = lastOrderIndex + 1;
+				list[itemID] = {
+					ItemID = itemID,
+					Quantity = quantity,
+					AddedAt = time(),
+					OrderIndex = orderIndex
+				};
+				lastOrderIndex = orderIndex;
+			end
         end
     end
 
 	local shoppingList = {
 		Items = list,
 		Name = name,
-		ImportedAt = GetCurrentDate(),
-		IsFulfilled = false
+		ImportedAt = time(),
+		IsFulfilled = false,
+		MaxOrderIndex = lastOrderIndex
 	};
 	return shoppingList;
+end
+
+local function CollapseOrderIndices(shoppingList, start)
+	for _, entry in pairs(shoppingList.Items) do
+		if entry.OrderIndex > start then
+			entry.OrderIndex = entry.OrderIndex - 1;
+		end
+	end
 end
 
 ---@param shoppingListStr string
@@ -73,34 +92,49 @@ function ShoppingListUtil.CreateShoppingList(name)
 	local shoppingList = {
 		Items = {},
 		Name = name,
-		ImportedAt = GetCurrentDate(),
-		IsFulfilled = false
+		ImportedAt = time(),
+		IsFulfilled = false,
+		MaxOrderIndex = 0
 	};
 	return shoppingList;
 end
 
 ---@param shoppingList SimscraftShoppingList
 ---@param itemID number
----@param amount number
-function ShoppingListUtil.SetTargetItemQuantityByID(shoppingList, itemID, amount)
-	shoppingList.Items[itemID] = amount;
-end
-
----@param shoppingList SimscraftShoppingList
-function ShoppingListUtil.AdjustTargetItemQuantityByID(shoppingList, itemID, amount)
-	shoppingList.Items[itemID] = (shoppingList.Items[itemID] or 0) + amount;
+---@param quantity number
+function ShoppingListUtil.SetTargetItemQuantityByID(shoppingList, itemID, quantity)
+	if shoppingList.Items[itemID] then
+		shoppingList.Items[itemID].Quantity = quantity;
+	end
 end
 
 ---@param shoppingList SimscraftShoppingList
 ---@param itemID number
+---@param amount number
+function ShoppingListUtil.AdjustTargetItemQuantityByID(shoppingList, itemID, amount)
+	shoppingList.Items[itemID].Quantity = (shoppingList.Items[itemID].Quantity or 0) + amount;
+end
+
+---@param shoppingList SimscraftShoppingList
+---@param itemID number
+---@return number
 function ShoppingListUtil.GetTargetItemQuantityByID(shoppingList, itemID)
-	return shoppingList.Items[itemID] or 0;
+	local entry = shoppingList.Items[itemID];
+	if entry then
+		return entry.Quantity or 0;
+	end
+	return 0;
 end
 
 ---@param shoppingList SimscraftShoppingList
 ---@param itemID number
 function ShoppingListUtil.RemoveItemFromListByID(shoppingList, itemID)
-	ShoppingListUtil.SetTargetItemQuantityByID(shoppingList, itemID, 0);
+	local entry = shoppingList.Items[itemID];
+	local orderIndex = entry.OrderIndex;
+	shoppingList.Items[itemID] = nil;
+
+	shoppingList.MaxOrderIndex = shoppingList.MaxOrderIndex - 1;
+	CollapseOrderIndices(shoppingList, orderIndex);
 end
 
 ---@param shoppingList SimscraftShoppingList
@@ -108,7 +142,22 @@ end
 ---@param quantity? number
 function ShoppingListUtil.AddItemToListByID(shoppingList, itemID, quantity)
 	quantity = quantity or 1;
-	ShoppingListUtil.SetTargetItemQuantityByID(shoppingList, itemID, quantity);
+
+	local entry = shoppingList.Items[itemID];
+	if entry and entry.Quantity > 0 then
+		ShoppingListUtil.AdjustTargetItemQuantityByID(shoppingList, itemID, quantity);
+		return;
+	end
+
+	local orderIndex = shoppingList.MaxOrderIndex + 1;
+	local newEntry = {
+		ItemID = itemID,
+		Quantity = quantity,
+		AddedAt = time(),
+		OrderIndex = orderIndex
+	};
+	shoppingList.MaxOrderIndex = orderIndex;
+	shoppingList.Items[itemID] = newEntry;
 end
 
 ------------

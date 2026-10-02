@@ -147,7 +147,6 @@ function SimscraftShoppingListFrameMixin:OnLoad()
 
     ScrollUtil.InitScrollBoxListWithScrollBar(content.ScrollBox, content.ScrollBar, content.ScrollView);
 
-	Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, self.OnShoppingListAdded, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SHOW, self.OnShoppingListShow, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_ADD_ITEM, self.OnShoppingListAddItem, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_DELETE_ITEM, self.OnShoppingListDeleteItem, self);
@@ -164,12 +163,6 @@ function SimscraftShoppingListFrameMixin:OnLoad()
 	header.RenameEditBox:SetScript("OnEnterPressed", function()
 		self:OnRenameEditBoxEnterPressed();
 	end);
-end
-
-function SimscraftShoppingListFrameMixin:OnShoppingListAdded(list)
-	if not self.ActiveList and self:IsShown() then
-		self:OnShoppingListShow(list);
-	end
 end
 
 function SimscraftShoppingListFrameMixin:OnShoppingListShow(list)
@@ -208,9 +201,7 @@ function SimscraftShoppingListFrameMixin:ResetDataProvider()
 	self.Content.ScrollView:SetDataProvider(self.DataProvider);
 
 	self.DataProvider:SetSortComparator(function(a, b)
-		local nameA = C_Item.GetItemNameByID(a.ItemID) or UNKNOWNOBJECT;
-		local nameB = C_Item.GetItemNameByID(b.ItemID) or UNKNOWNOBJECT;
-		return nameA < nameB;
+		return a.OrderIndex < b.OrderIndex;
 	end);
 end
 
@@ -220,11 +211,8 @@ function SimscraftShoppingListFrameMixin:AddItems(items, noReset)
 	end
 
 	local sortedItems = {};
-	for itemID, quantity in pairs(items) do
-		tinsert(sortedItems, {
-			ItemID = itemID,
-			Quantity = quantity
-		});
+	for itemID, entry in pairs(items) do
+		tinsert(sortedItems, entry);
 	end
 
 	self.DataProvider:InsertTable(sortedItems);

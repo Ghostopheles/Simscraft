@@ -27,7 +27,8 @@ function SimscraftShoppingListManagerListEntryMixin:Init(data)
 		self.DateText:SetText("");
 		self.DeleteButton:Hide();
 	else
-		self.DateText:SetFormattedText("Imported on %s", data.ImportedAt);
+		local formattedDate = date("%m/%d/%y", data.ImportedAt);
+		self.DateText:SetFormattedText("Created on %s", formattedDate);
 		self.DeleteButton:Show();
 	end
 end
@@ -42,7 +43,7 @@ function SimscraftShoppingListManagerListEntryMixin:OnMouseDown()
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnMouseUp()
-	Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, self);
+	Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, self.Name);
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnDeleteButtonPressed()

@@ -184,9 +184,7 @@ function Manager.CreateShoppingList(name)
 	end
 
 	local shoppingList = ShoppingListUtil.CreateShoppingList(name);
-	SimscraftShoppingLists[name] = shoppingList;
-	Registry:TriggerEvent(Events.SHOPPING_LIST_ADDED, shoppingList);
-
+	Manager.RegisterShoppingList(name, shoppingList);
 	return shoppingList;
 end
 
@@ -209,7 +207,7 @@ end
 ---@param name string
 function Manager.ShowShoppingList(name)
 	local list = SimscraftShoppingLists[name];
-	if name then
+	if list then
 		SimscraftShoppingListManagerFrame:Show();
 		Registry:TriggerEvent(Events.SHOPPING_LIST_SHOW, list);
 	end
@@ -387,7 +385,6 @@ function SimscraftShoppingListManagerFrameMixin:ResetDataProvider()
 end
 
 function SimscraftShoppingListManagerFrameMixin:Populate(lists)
-	DevTools_Dump(self.SelectionBehavior:GetFirstSelectedElementData());
 	self:ResetDataProvider();
 
 	local lists = lists or Manager.GetShoppingLists();
