@@ -106,8 +106,9 @@ local function CacheQuantityForItem(itemID)
 	local quantity = 0;
 	local numListsForItem = 0;
 	for name, list in pairs(SimscraftShoppingLists) do
-		local listQuantity = list.Items[itemID];
-		if listQuantity then
+		local itemEntry = list.Items[itemID];
+		if itemEntry then
+			local listQuantity = itemEntry.Quantity;
 			quantity = quantity + listQuantity;
 			numListsForItem = numListsForItem + 1;
 
