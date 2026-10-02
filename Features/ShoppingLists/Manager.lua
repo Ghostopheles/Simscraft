@@ -165,7 +165,9 @@ if not SimscraftShoppingLists then
     SimscraftShoppingLists = {};
 end
 
-function Manager.AddShoppingList(name, shoppingList)
+---@param name string
+---@param shoppingList SimscraftShoppingList
+function Manager.RegisterShoppingList(name, shoppingList)
     if SimscraftShoppingLists[name] then
         error(("A shopping list with the name '%s' already exists."):format(name));
     end
@@ -174,6 +176,21 @@ function Manager.AddShoppingList(name, shoppingList)
 	Registry:TriggerEvent(Events.SHOPPING_LIST_ADDED, shoppingList);
 end
 
+---@param name string
+---@return SimscraftShoppingList
+function Manager.CreateShoppingList(name)
+	if SimscraftShoppingLists[name] then
+		error(("A shopping list with the name '%s' already exists."):format(name));
+	end
+
+	local shoppingList = ShoppingListUtil.CreateShoppingList(name);
+	SimscraftShoppingLists[name] = shoppingList;
+	Registry:TriggerEvent(Events.SHOPPING_LIST_ADDED, shoppingList);
+
+	return shoppingList;
+end
+
+---@param name string
 function Manager.RemoveShoppingList(name)
     SimscraftShoppingLists[name] = nil;
 	Registry:TriggerEvent(Events.SHOPPING_LIST_REMOVED, name);
@@ -189,6 +206,7 @@ function Manager.GetShoppingList(name)
 	return SimscraftShoppingLists[name];
 end
 
+---@param name string
 function Manager.ShowShoppingList(name)
 	local list = SimscraftShoppingLists[name];
 	if name then
@@ -196,18 +214,24 @@ function Manager.ShowShoppingList(name)
 	end
 end
 
+---@param name string
+---@param shoppingList SimscraftShoppingList
 function Manager.SaveShoppingList(name, shoppingList)
 	SimscraftShoppingLists[name] = shoppingList;
 end
 
+---@param name string
 function Manager.IsShoppingListNameAvailable(name)
 	return SimscraftShoppingLists[name] == nil;
 end
 
+---@param name string
 function Manager.ConfirmShoppingListDeletion(name)
 	StaticPopup_Show("SIMSCRAFT_DELETE_SHOPPING_LIST_CONFIRM", nil, nil, name);
 end
 
+---@param oldName string
+---@param newName string
 function Manager.RenameShoppingList(oldName, newName)
 	local oldList = SimscraftShoppingLists[oldName];
 	local renamed = CopyTable(oldList);
@@ -216,38 +240,6 @@ function Manager.RenameShoppingList(oldName, newName)
 	SimscraftShoppingLists[newName] = renamed;
 	SimscraftShoppingLists[oldName] = nil;
 	Registry:TriggerEvent(Events.SHOPPING_LIST_RENAMED, oldName, newName);
-end
-
----@param creatureID number
----@return bool
-function Manager.IsVendorRelevant(creatureID)
-	for name, list in pairs(SimscraftShoppingLists) do
-		if ShoppingListUtil.IsVendorInShoppingList(list, creatureID) then
-			return true;
-		end
-	end
-	return false;
-end
-
----@param creatureID number
----@return table<number, number>
-function Manager.GetTargetItemsForVendor(creatureID)
-	local items = {};
-	for name, list in pairs(SimscraftShoppingLists) do
-		local allListItems = list.Items;
-		local vendorItems = ShoppingListUtil.GetItemsForVendor(list, creatureID);
-		for _, itemID in pairs(vendorItems) do
-			local quantity = allListItems[itemID];
-			if quantity and quantity > 0 then
-				if items[itemID] then
-					items[itemID] = items[itemID] + quantity;
-				else
-					items[itemID] = quantity;
-				end
-			end
-		end
-	end
-	return items;
 end
 
 ---@param itemID number
@@ -269,8 +261,7 @@ local function TryCreateWishlist()
 		return;
 	end
 
-	local wishlist = ShoppingListUtil.CreateShoppingListFromRawList({}, WISHLIST_NAME);
-	Manager.SaveShoppingList(WISHLIST_NAME, wishlist);
+	Manager.CreateShoppingList(WISHLIST_NAME);
 end
 
 EventUtil.ContinueOnAddOnLoaded(addonName, TryCreateWishlist);

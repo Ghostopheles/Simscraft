@@ -110,7 +110,7 @@ function SimscraftShoppingListImportFrameMixin:Submit()
 		return;
 	end
 
-    internal.ShoppingListManager.AddShoppingList(name, list);
+    internal.ShoppingListManager.RegisterShoppingList(name, list);
     self:Hide();
     PlaySound(LIST_IMPORT_SUCCESS_SOUNDKIT);
 end

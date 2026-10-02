@@ -222,7 +222,7 @@ function SimscraftDecorItemSearchMixin:OnTextChanged(userInput)
 		return;
 	end
 
-	if self:GetText() == "" then
+	if self.SearchBox:GetText() == "" then
 		self:ResetDataProvider();
 		return;
 	end
