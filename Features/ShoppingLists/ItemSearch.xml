@@ -3,7 +3,7 @@
 
 	<Include file="ItemSearch.lua"/>
 
-	<Frame name="SimscraftDecorItemSearchResultTemplate" mixin="SimscraftDecorItemSearchResultMixin" virtual="true">
+	<Frame name="SimscraftDecorItemSearchResultTemplate" mixin="SimscraftDecorItemSearchResultMixin" enableMouse="true" virtual="true">
 		<Size y="75"/>
 		<Frames>
 			<Button parentKey="ItemButton" propagateMouseInput="Both">
@@ -62,10 +62,14 @@
         </Scripts>
 	</Frame>
 
-	<Frame name="SimscraftDecorItemSearchTemplate" mixin="SimscraftDecorItemSearchMixin" virtual="true">
+	<Frame name="SimscraftDecorItemSearchFrame" mixin="SimscraftDecorItemSearchMixin" parent="UIParent" frameStrata="FULLSCREEN_DIALOG" hidden="true">
+		<Size x="400" y="500"/>
+		<Anchors>
+			<Anchor point="CENTER"/>
+		</Anchors>
 		<Frames>
 			<EditBox parentKey="SearchBox" inherits="SearchBoxTemplate" font="GameFontWhite" autoFocus="false">
-				<Size x="175" y="20"/>
+				<Size x="235" y="20"/>
 				<Anchors>
 					<Anchor point="TOP"/>
 				</Anchors>
@@ -95,13 +99,5 @@
 		<Scripts>
 			<OnLoad method="OnLoad"/>
 		</Scripts>
-	</Frame>
-
-
-	<Frame name="SimscraftItemSearchTest" parent="UIParent" inherits="SimscraftDecorItemSearchTemplate" frameStrata="FULLSCREEN_DIALOG" hidden="true">
-		<Size x="400" y="500"/>
-		<Anchors>
-			<Anchor point="CENTER"/>
-		</Anchors>
 	</Frame>
 </Ui>

@@ -113,6 +113,7 @@ function SimscraftDecorItemSearchResultMixin:OnUpdate()
 end
 
 function SimscraftDecorItemSearchResultMixin:OnMouseUp(buttonName)
+	SimscraftDecorItemSearchFrame:OnSearchResultClicked(self:GetData());
 end
 
 function SimscraftDecorItemSearchResultMixin:ShowItemTooltip(owner, anchor)
@@ -261,11 +262,13 @@ function SimscraftDecorItemSearchMixin:OnEnterPressed()
 	local selections = self.SelectionBehavior:GetSelectedElementData();
 	local selected = selections[1];
 	if selected then
-		local itemID = internal.DecorUtil.GetDecorItemIDByRecordID(selected.recordID);
-		if itemID then
-			Registry:TriggerEvent(Events.SHOPPING_LIST_ADD_ITEM, itemID, 1);
-		end
+		self:AddItemToListByRecordID(selected.recordID)
 	end
+	self:Hide();
+end
+
+function SimscraftDecorItemSearchMixin:OnSearchResultClicked(elementData)
+	self:AddItemToListByRecordID(elementData.recordID);
 	self:Hide();
 end
 
@@ -299,6 +302,14 @@ end
 
 function SimscraftDecorItemSearchMixin:OnDecorSearchHide()
 	self:Hide();
+end
+
+function SimscraftDecorItemSearchMixin:AddItemToListByRecordID(recordID)
+	local itemID = internal.DecorUtil.GetDecorItemIDByRecordID(recordID);
+	if itemID then
+		Registry:TriggerEvent(Events.SHOPPING_LIST_ADD_ITEM, itemID, 1);
+		PlaySound(SOUNDKIT.UI_GARRISON_TOAST_MISSION_COMPLETE);
+	end
 end
 
 function SimscraftDecorItemSearchMixin:ResetDataProvider()
