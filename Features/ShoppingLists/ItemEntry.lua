@@ -123,8 +123,8 @@ end
 function SimscraftShoppingListItemEntryMixin:OnInspectButtonClicked()
 	C_AddOns.LoadAddOn("Blizzard_HousingDashboard");
 
-	local catalogEntryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(self.ItemID);
-	EventRegistry:TriggerEvent("HousingCatalogFrame.OpenToDecorID", catalogEntryInfo.recordID);
+	local recordID = internal.DecorUtil.GetDecorRecordIDByItem(self.ItemID);
+	EventRegistry:TriggerEvent("HousingCatalogFrame.OpenToDecorID", recordID);
 end
 
 function SimscraftShoppingListItemEntryMixin:SetItem(itemID)
@@ -151,18 +151,13 @@ function SimscraftShoppingListItemEntryMixin:UpdateOwnedQuantity()
 		return;
 	end
 
-	local catalogEntryInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(self.ItemID);
-	if not catalogEntryInfo then
-		self.StoredQuantity = 0;
-		self.PlacedQuantity = 0;
-		return;
-	end
-	self.StoredQuantity = catalogEntryInfo.totalNumStored;
-	self.PlacedQuantity = catalogEntryInfo.totalNumPlaced;
+	local _, stored, placed = internal.DecorUtil.GetAmountOwnedByItem(self.ItemID);
+	self.StoredQuantity = stored;
+	self.PlacedQuantity = placed;
 end
 
 function SimscraftShoppingListItemEntryMixin:UpdateQuantityText()
-	local owned = self.StoredQuantity + self.PlacedQuantity;
+	local owned = self.StoredQuantity;
 	local required = self.RequiredQuantity;
 	local text = format("%d/%d", owned, required);
 

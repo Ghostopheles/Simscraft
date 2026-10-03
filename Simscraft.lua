@@ -2,6 +2,7 @@ local addonName = ...;
 
 ---@class SimscraftInternal
 local internal = select(2, ...);
+Simscraft = internal;
 
 internal.ThemeColor = CreateColorFromHexString("ffa6e329");
 

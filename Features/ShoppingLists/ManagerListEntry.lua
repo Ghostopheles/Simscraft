@@ -5,11 +5,6 @@ local Events = internal.Events;
 local Registry = internal.Registry;
 
 ------------
-
-local function FormatTimestamp(timestamp)
-	return date("%m/%d/%y", timestamp);
-end
-
 local timeFormatter = CreateFromMixins(SecondsFormatterMixin);
 timeFormatter:Init(
 	SecondsFormatterConstants.ZeroApproximationThreshold,
@@ -22,7 +17,7 @@ timeFormatter:SetDesiredUnitCount(2);
 timeFormatter:SetMinInterval(SecondsFormatter.Interval.Minutes);
 timeFormatter:SetStripIntervalWhitespace(false);
 
-local function FormatLastUpdatedTimestamp(timestamp)
+local function FormatTimestamp(timestamp)
 	local diff = time() - timestamp;
 	return timeFormatter:Format(diff);
 end
@@ -37,6 +32,9 @@ function SimscraftShoppingListManagerListEntryMixin:OnLoad()
 	end);
 
 	self.NameText:SetTextScale(1.2);
+
+	self.FulfillmentIcon.tooltipText = internal.ThemeColor:WrapTextInColorCode("This list has been completed!");
+	internal.AddTooltip(self.FulfillmentIcon, "ANCHOR_TOP");
 end
 
 function SimscraftShoppingListManagerListEntryMixin:Init(data)
@@ -50,18 +48,23 @@ function SimscraftShoppingListManagerListEntryMixin:Init(data)
 	self.DeleteButton:SetShown(not isWishlist);
 	self.LastUpdatedText:SetShown(isWishlist);
 
+	local shoppingList = internal.ShoppingListManager.GetShoppingList(self.Name);
+
 	if isWishlist then
-		self:UpdateLastUpdatedTimestamp(data);
+		self:UpdateTimestamp(shoppingList.LastUpdatedAt);
 	end
+
+	self:UpdateFulfillmentState(shoppingList.IsFulfilled);
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnShow()
-	if not self.GetData then
+	if not self.Name then
 		return;
 	end
 
-	local data = self:GetData();
-	self:UpdateLastUpdatedTimestamp(data);
+	local shoppingList = internal.ShoppingListManager.GetShoppingList(self.Name);
+	self:UpdateTimestamp(shoppingList.LastUpdatedAt);
+	self:UpdateFulfillmentState(shoppingList.IsFulfilled);
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnMouseUp()
@@ -76,7 +79,11 @@ function SimscraftShoppingListManagerListEntryMixin:OnDeleteButtonPressed()
 	end
 end
 
-function SimscraftShoppingListManagerListEntryMixin:UpdateLastUpdatedTimestamp(data)
-	local lastUpdatedAt = FormatLastUpdatedTimestamp(data.LastUpdatedAt);
+function SimscraftShoppingListManagerListEntryMixin:UpdateTimestamp(timestamp)
+	local lastUpdatedAt = FormatTimestamp(timestamp);
 	self.LastUpdatedText:SetFormattedText("Last updated %s ago", lastUpdatedAt);
+end
+
+function SimscraftShoppingListManagerListEntryMixin:UpdateFulfillmentState(isFulfilled)
+	self.FulfillmentIcon:SetShown(isFulfilled);
 end

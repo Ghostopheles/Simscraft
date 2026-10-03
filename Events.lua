@@ -38,7 +38,8 @@ local Events = {
 	SHOPPING_LIST_DELETE = "SHOPPING_LIST_DELETE",
 	SHOPPING_LIST_RENAMED = "SHOPPING_LIST_RENAMED",
 	SHOPPING_LIST_IMPORT_FRAME_VISIBILITY_CHANGED = "SHOPPING_LIST_IMPORT_FRAME_VISIBILITY_CHANGED",
-	SHOPPING_LIST_MODIFIED = "SHOPPING_LIST_MODIFIED",
+	SHOPPING_LIST_UPDATED = "SHOPPING_LIST_UPDATED",
+	SHOPPING_LIST_FULFILLMENT_STATE_UPDATED = "SHOPPING_LIST_FULFILLMENT_STATE_UPDATED",
 	CATALOG_SEARCH_RESULTS_UPDATED = "CATALOG_SEARCH_RESULTS_UPDATED",
 	DECOR_SEARCH_SHOW = "DECOR_SEARCH_SHOW",
 	DECOR_SEARCH_HIDE = "DECOR_SEARCH_HIDE",
@@ -55,11 +56,17 @@ internal.Registry = Registry;
 local f = CreateFrame("Frame");
 f:RegisterEvent("HOUSE_EDITOR_MODE_CHANGED");
 f:RegisterEvent("MODIFIER_STATE_CHANGED");
+f:RegisterEvent("HOUSING_STORAGE_ENTRY_UPDATED");
 f:SetScript("OnEvent", function(self, event, ...)
     if event == "HOUSE_EDITOR_MODE_CHANGED" then
         Registry:TriggerEvent(Events.HOUSE_EDITOR_MODE_CHANGED, ...);
     elseif event == "MODIFIER_STATE_CHANGED" then
         Registry:TriggerEvent(Events.HOUSE_EDITOR_MODE_CHANGED, ...);
+	elseif event == "HOUSING_STORAGE_ENTRY_UPDATED" then
+		local entry = ...;
+		if entry.entryType == Enum.HousingCatalogEntryType.Decor then
+			Registry:TriggerEvent(Events.NEW_HOUSING_ITEM_ACQUIRED, entry.recordID);
+		end
     end
 end);
 

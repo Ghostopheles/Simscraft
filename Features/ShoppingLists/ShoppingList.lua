@@ -149,6 +149,7 @@ function SimscraftShoppingListFrameMixin:OnLoad()
 
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SHOW, self.OnShoppingListShow, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_ADD_ITEM, self.OnShoppingListAddItem, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_MOVE_ITEM, self.OnShoppingListMoveItem, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_DELETE_ITEM, self.OnShoppingListDeleteItem, self);
 
 	self.RenameButton:SetScript("OnClick", function()
@@ -210,12 +211,8 @@ function SimscraftShoppingListFrameMixin:AddItems(items, noReset)
 		self:ResetDataProvider();
 	end
 
-	local sortedItems = {};
-	for itemID, entry in pairs(items) do
-		tinsert(sortedItems, entry);
-	end
-
-	self.DataProvider:InsertTable(sortedItems);
+	local values = GetValuesArray(items);
+	self.DataProvider:InsertTable(values);
 end
 
 function SimscraftShoppingListFrameMixin:OnRenameButtonClicked()
@@ -261,12 +258,18 @@ function SimscraftShoppingListFrameMixin:OnShoppingListAddItem(itemID, quantity)
 	ShoppingListUtil.AddItemToListByID(shoppingList, itemID, quantity);
 	self:RefreshItems(shoppingList.Items);
 	self:ScrollToItemByID(itemID);
+
+	Registry:TriggerEvent(Events.SHOPPING_LIST_UPDATED, shoppingList);
+end
+
+function SimscraftShoppingListFrameMixin:OnShoppingListMoveItem(itemID, offset)
 end
 
 function SimscraftShoppingListFrameMixin:OnShoppingListDeleteItem(itemID)
 	local shoppingList = internal.ShoppingListManager.GetShoppingList(self.ActiveList.Name);
 	ShoppingListUtil.RemoveItemFromListByID(shoppingList, itemID);
 	self:RefreshItems(shoppingList.Items);
+	Registry:TriggerEvent(Events.SHOPPING_LIST_UPDATED, shoppingList);
 end
 
 function SimscraftShoppingListFrameMixin:ScrollToItemByID(itemID)

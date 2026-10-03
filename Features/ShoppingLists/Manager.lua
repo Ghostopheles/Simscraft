@@ -141,21 +141,14 @@ local function InvalidateItemCache()
 	CACHED_NUM_LISTS_PER_ITEM = {};
 end
 
-local function OnShoppingListModified(_, ...)
+local function OnShoppingListUpdated(_, shoppingList)
 	InvalidateItemCache();
-
-	local args = {...};
-	RunNextFrame(function()
-		Registry:TriggerEvent(Events.SHOPPING_LIST_MODIFIED, unpack(args));
-	end);
 end
 
-Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, OnShoppingListModified);
-Registry:RegisterCallback(Events.SHOPPING_LIST_REMOVED, OnShoppingListModified);
-Registry:RegisterCallback(Events.SHOPPING_LIST_RENAMED, OnShoppingListModified);
-Registry:RegisterCallback(Events.SHOPPING_LIST_ADD_ITEM, OnShoppingListModified);
-Registry:RegisterCallback(Events.SHOPPING_LIST_MOVE_ITEM, OnShoppingListModified);
-Registry:RegisterCallback(Events.SHOPPING_LIST_DELETE_ITEM, OnShoppingListModified);
+Registry:RegisterCallback(Events.SHOPPING_LIST_ADDED, OnShoppingListUpdated);
+Registry:RegisterCallback(Events.SHOPPING_LIST_REMOVED, OnShoppingListUpdated);
+Registry:RegisterCallback(Events.SHOPPING_LIST_RENAMED, OnShoppingListUpdated);
+Registry:RegisterCallback(Events.SHOPPING_LIST_UPDATED, OnShoppingListUpdated);
 
 ------------
 
@@ -265,7 +258,25 @@ function Manager.ToggleManagerFrame()
 	f:SetShown(not f:IsShown());
 end
 
+function Manager.ForEachShoppingList(func)
+	for _, shoppingList in pairs(SimscraftShoppingLists) do
+		local success, result = pcall(func, shoppingList);
+		if success and not result then
+			break;
+		end
+	end
+end
+
 ------------
+
+---@param shoppingList SimscraftShoppingList
+local function CheckShoppingListFulfillment(shoppingList)
+	local isFulfilled = ShoppingListUtil.IsListFulfilled(shoppingList);
+	if isFulfilled ~= shoppingList.IsFulfilled then
+		shoppingList.IsFulfilled = isFulfilled;
+		Registry:TriggerEvent(Events.SHOPPING_LIST_FULFILLMENT_STATE_UPDATED, shoppingList);
+	end
+end
 
 local function TryCreateWishlist()
 	if not Manager.IsShoppingListNameAvailable(WISHLIST_NAME) then
@@ -276,7 +287,16 @@ local function TryCreateWishlist()
 	Manager.CreateShoppingList(WISHLIST_NAME);
 end
 
-EventUtil.ContinueOnAddOnLoaded(addonName, TryCreateWishlist);
+local function UpdateListFulfillments()
+	Manager.ForEachShoppingList(CheckShoppingListFulfillment);
+end
+
+local function OnAddonLoaded()
+	TryCreateWishlist();
+	UpdateListFulfillments();
+end
+
+EventUtil.ContinueOnAddOnLoaded(addonName, OnAddonLoaded);
 
 ------------
 
@@ -328,7 +348,8 @@ function SimscraftShoppingListManagerFrameMixin:OnLoad()
 	Registry:RegisterCallback(Events.SHOPPING_LIST_SELECTED, self.OnShoppingListSelected, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_RENAMED, self.OnShoppingListRenamed, self);
 	Registry:RegisterCallback(Events.SHOPPING_LIST_IMPORT_FRAME_VISIBILITY_CHANGED, self.OnImportFrameVisibilityChanged, self);
-	Registry:RegisterCallback(Events.SHOPPING_LIST_MODIFIED, self.OnShoppingListModified, self);
+	Registry:RegisterCallback(Events.SHOPPING_LIST_UPDATED, self.OnShoppingListUpdated, self);
+	Registry:RegisterCallback(Events.NEW_HOUSING_ITEM_ACQUIRED, self.OnNewHousingItemAcquired,self);
 
 	local highlight = content.ScrollBox.SelectionHighlight;
 	self.SelectionHighlight = highlight;
@@ -376,7 +397,8 @@ function SimscraftShoppingListManagerFrameMixin:OnShoppingListRemoved(name)
 	end
 end
 
-function SimscraftShoppingListManagerFrameMixin:OnShoppingListModified(shoppingList)
+function SimscraftShoppingListManagerFrameMixin:OnShoppingListUpdated(shoppingList)
+	CheckShoppingListFulfillment(shoppingList);
 	self:Populate();
 end
 
@@ -387,6 +409,20 @@ end
 
 function SimscraftShoppingListManagerFrameMixin:OnShoppingListSelected(name)
 	self:SelectListByName(name);
+end
+
+function SimscraftShoppingListManagerFrameMixin:OnNewHousingItemAcquired(recordID)
+	local itemID = internal.DecorUtil.GetDecorItemIDByRecordID(recordID);
+	if itemID then
+		Manager.ForEachShoppingList(function(shoppingList)
+			local targetQuantity = ShoppingListUtil.GetTargetItemQuantityByID(shoppingList, itemID);
+			if targetQuantity > 0 then
+				self:OnShoppingListUpdated(shoppingList);
+				return false;
+			end
+			return true;
+		end);
+	end
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnImportButtonClicked()
@@ -412,8 +448,6 @@ function SimscraftShoppingListManagerFrameMixin:Populate(lists)
 		tinsert(items, {
 			Name = name,
 			UniqueItems = #keys,
-			ImportedAt = list.ImportedAt,
-			LastUpdatedAt = list.LastUpdatedAt
 		});
 	end
 

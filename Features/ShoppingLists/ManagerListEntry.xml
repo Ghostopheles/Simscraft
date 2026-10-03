@@ -51,6 +51,19 @@
 					<KeyValue key="tooltipAnchor" value="ANCHOR_TOP" type="string"/>
 				</KeyValues>
 			</Button>
+
+			<Frame parentKey="FulfillmentIcon" frameStrata="HIGH" hidden="true">
+				<Size x="30" y="30"/>
+				<Anchors>
+					<Anchor point="CENTER" relativePoint="TOPRIGHT" x="-10" y="-7"/>
+				</Anchors>
+
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture parentKey="Icon" atlas="common-icon-checkmark" setAllPoints="true"/>
+					</Layer>
+				</Layers>
+			</Frame>
 		</Frames>
 
 		<Scripts>
