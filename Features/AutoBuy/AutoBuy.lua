@@ -167,6 +167,10 @@ local function OnTooltipSetItem(tooltip)
         return;
     end
 
+	if not tooltip:GetOwner():IsObjectType("Button") then
+		return;
+	end
+
     if tooltip.GetItem then
         local itemID = select(3, tooltip:GetItem());
         if itemID and C_Item.IsDecorItem(itemID) then
