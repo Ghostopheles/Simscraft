@@ -179,7 +179,6 @@ function ShoppingListUtil.IsListFulfilled(shoppingList)
 	for itemID, itemEntry in pairs(shoppingList.Items) do
 		local _, totalStored = internal.DecorUtil.GetAmountOwnedByItem(itemID);
 		if totalStored < itemEntry.Quantity then
-			printf("stored: %d, target: %d", totalStored, itemEntry.Quantity);
 			return false;
 		end
 	end
