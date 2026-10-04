@@ -113,7 +113,7 @@ function SimscraftDecorItemSearchResultMixin:OnUpdate()
 end
 
 function SimscraftDecorItemSearchResultMixin:OnMouseUp(buttonName)
-	SimscraftDecorItemSearchFrame:OnSearchResultClicked(self:GetData());
+	SimscraftDecorItemSearchFrame:OnSearchResultClicked(self:GetData(), buttonName);
 end
 
 function SimscraftDecorItemSearchResultMixin:ShowItemTooltip(owner, anchor)
@@ -246,6 +246,10 @@ function SimscraftDecorItemSearchMixin:OnArrowPressed(key)
 		return;
 	end
 
+	if key == "LEFT" or key == "RIGHT" then
+		return;
+	end
+
 	if selection:IsFirstElementDataSelected() and key == "UP" then
 		selection:SelectLastElementData();
 	elseif selection:IsLastElementDataSelected() and key == "DOWN" then
@@ -272,7 +276,11 @@ function SimscraftDecorItemSearchMixin:OnEnterPressed()
 	self:Hide();
 end
 
-function SimscraftDecorItemSearchMixin:OnSearchResultClicked(elementData)
+function SimscraftDecorItemSearchMixin:OnSearchResultClicked(elementData, buttonName)
+	if buttonName ~= "LeftButton" then
+		return;
+	end
+
 	self:AddItemToListByRecordID(elementData.recordID);
 	self:Hide();
 end
