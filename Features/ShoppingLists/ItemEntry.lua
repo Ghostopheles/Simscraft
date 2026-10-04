@@ -228,6 +228,10 @@ function SimscraftShoppingListItemEntryQuantityDisplayMixin:Commit()
 		return;
 	end
 
+	if newQuantity <= 0 then
+		newQuantity = 1;
+	end
+
 	local itemID = self:GetParent():GetItemID();
 	Registry:TriggerEvent(Events.SHOPPING_LIST_SET_TARGET_QUANTITY, itemID, newQuantity);
 
