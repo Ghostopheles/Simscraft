@@ -398,6 +398,10 @@ function SimscraftShoppingListManagerFrameMixin:OnShoppingListRemoved(name)
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnShoppingListUpdated(shoppingList)
+	if not self:IsShown() then
+		return;
+	end
+
 	CheckShoppingListFulfillment(shoppingList);
 	self:Populate();
 end
@@ -408,6 +412,10 @@ function SimscraftShoppingListManagerFrameMixin:OnShoppingListRenamed(oldName, n
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnShoppingListSelected(name)
+	if not self:IsShown() then
+		return;
+	end
+
 	self:SelectListByName(name);
 end
 
