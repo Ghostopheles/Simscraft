@@ -6,6 +6,7 @@
 ## IconTexture: Interface/ICONS/inv_babypotadpole_red
 ## LoadSavedVariablesFirst: 1
 ## SavedVariables: SimscraftConfig, SimscraftShoppingLists
+## AddonCompartmentFunc: Simscraft_AddonCompartmentFunc
 
 ## X-License: Public Domain
 

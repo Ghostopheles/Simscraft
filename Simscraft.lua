@@ -55,3 +55,7 @@ SLASH_SIMSCRAFT1, SLASH_SIMSCRAFT2 = "/simscraft", "/sims";
 function SlashCmdList.SIMSCRAFT(msg)
 	internal.ShoppingListManager.ToggleManagerFrame();
 end
+
+function Simscraft_AddonCompartmentFunc()
+	internal.ShoppingListManager.ToggleManagerFrame();
+end
