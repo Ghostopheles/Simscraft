@@ -326,7 +326,6 @@ function SimscraftDecorItemSearchMixin:ResetDataProvider()
 end
 
 function SimscraftDecorItemSearchMixin:RunSearch(query)
-	printf("searching for: %s", query);
 	local searchText = query or self.SearchBox:GetText();
 	Catalog.Search(searchText);
 end

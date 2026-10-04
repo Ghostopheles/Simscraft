@@ -5,6 +5,8 @@ local Events = internal.Events;
 local Registry = internal.Registry;
 
 local SEARCHER = C_HousingCatalog.CreateCatalogSearcher();
+SEARCHER:SetAutoUpdateOnParamChanges(false);
+SEARCHER:SetBaseVariantOnly(true);
 SEARCHER:SetResultsUpdatedCallback(function()
 	Registry:TriggerEvent(Events.CATALOG_SEARCH_RESULTS_UPDATED);
 end);
@@ -15,7 +17,9 @@ end);
 local Catalog = {};
 
 function Catalog.SetSearchText(searchText)
-	SEARCHER:SetSearchText(searchText);
+	if searchText ~= SEARCHER:GetSearchText() then
+		SEARCHER:SetSearchText(searchText);
+	end
 end
 
 ---@param searchText? string
