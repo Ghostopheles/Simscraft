@@ -375,10 +375,12 @@ end
 
 function SimscraftShoppingListManagerFrameMixin:OnShow()
 	self:Populate();
+	PlaySound(SOUNDKIT.HOUSING_DASHBOARD_OPEN);
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnHide()
 	Registry:TriggerEvent(Events.DECOR_SEARCH_HIDE);
+	PlaySound(SOUNDKIT.HOUSING_DASHBOARD_CLOSE);
 end
 
 function SimscraftShoppingListManagerFrameMixin:OnShoppingListAdded(newList)
