@@ -71,11 +71,8 @@
 			<EditBox parentKey="SearchBox" inherits="SearchBoxTemplate" font="GameFontWhite" autoFocus="false">
 				<Size x="235" y="20"/>
 				<Anchors>
-					<Anchor point="TOP"/>
+					<Anchor point="TOP" y="-10"/>
 				</Anchors>
-				<KeyValues>
-					<KeyValue key="instructions" value="Search for a decor item by name" type="string" />
-				</KeyValues>
 			</EditBox>
 
 			<Frame parentKey="SearchResults">
@@ -95,6 +92,22 @@
 				</Frames>
 			</Frame>
 		</Frames>
+
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString parentKey="HelpText" font="GameFontWhite" justifyH="CENTER" text="CHINA">
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Background" atlas="housing-wood-frame-basic-background" setAllPoints="true"/>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="Border" atlas="housing-simple-wood-frame" setAllPoints="true"/>
+			</Layer>
+		</Layers>
 
 		<Scripts>
 			<OnLoad method="OnLoad"/>

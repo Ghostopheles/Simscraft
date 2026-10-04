@@ -169,10 +169,15 @@ function SimscraftDecorItemSearchMixin:OnLoad()
 		end);
 	end
 
-	Hook("OnTextChanged");
 	Hook("OnArrowPressed");
 	Hook("OnEnterPressed");
 	Hook("OnEscapePressed");
+
+	eb:HookScript(
+		"OnTextChanged",
+		internal.Debounce(internal.Constants.DECOR_SEARCH_DEBOUNCE, function()
+			self:OnTextChanged();
+	end));
 
 	Registry:RegisterCallback(Events.CATALOG_SEARCH_RESULTS_UPDATED, self.OnSearchResultsUpdated, self);
 
@@ -216,30 +221,30 @@ function SimscraftDecorItemSearchMixin:OnLoad()
 
 	Registry:RegisterCallback(Events.DECOR_SEARCH_SHOW, self.OnDecorSearchShow, self);
 	Registry:RegisterCallback(Events.DECOR_SEARCH_HIDE, self.OnDecorSearchHide, self);
+
+	self.SearchBox.Instructions:SetText("Search for a decor item by name");
+
+	local helpText = GRAY_FONT_COLOR:WrapTextInColorCode("Use the search box to search for decor items by name.|nNavigate results with your arrows keys or mouse.");
+	self.HelpText:SetText(helpText);
 end
 
-function SimscraftDecorItemSearchMixin:OnTextChanged(userInput)
-	if not userInput then
-		return;
-	end
-
-	if self.SearchBox:GetText() == "" then
+function SimscraftDecorItemSearchMixin:OnTextChanged()
+	local query = self.SearchBox:GetText();
+	if query == "" then
 		self:ResetDataProvider();
 		return;
 	end
 
-	if not self.TextChangedCallback then
-		self.TextChangedCallback = internal.Debounce(internal.Constants.DECOR_SEARCH_DEBOUNCE, function()
-			self:RunSearch();
-			self.TextChangedCallback = nil;
-		end);
-	end
-	self.TextChangedCallback();
+	self:RunSearch(query);
 end
 
 function SimscraftDecorItemSearchMixin:OnArrowPressed(key)
 	local selection = self.SelectionBehavior;
 	local scrollBox = self.SearchResults.ScrollBox;
+
+	if not selection:HasSelection() then
+		return;
+	end
 
 	if selection:IsFirstElementDataSelected() and key == "UP" then
 		selection:SelectLastElementData();
@@ -291,6 +296,8 @@ function SimscraftDecorItemSearchMixin:OnSearchResultsUpdated()
 	end
 
 	self.SelectionBehavior:SelectFirstElementData();
+
+	self:UpdateHelpTextVisibility();
 end
 
 function SimscraftDecorItemSearchMixin:OnDecorSearchShow()
@@ -315,9 +322,20 @@ end
 function SimscraftDecorItemSearchMixin:ResetDataProvider()
 	self.DataProvider = CreateDataProvider();
 	self.SearchResults.ScrollView:SetDataProvider(self.DataProvider);
+	self:UpdateHelpTextVisibility();
 end
 
-function SimscraftDecorItemSearchMixin:RunSearch()
-	local searchText = self.SearchBox:GetText();
+function SimscraftDecorItemSearchMixin:RunSearch(query)
+	printf("searching for: %s", query);
+	local searchText = query or self.SearchBox:GetText();
 	Catalog.Search(searchText);
+end
+
+function SimscraftDecorItemSearchMixin:UpdateHelpTextVisibility()
+	if not self.DataProvider then
+		return;
+	end
+
+	local size = self.DataProvider:GetSize();
+	self.HelpText:SetShown(size == 0);
 end
