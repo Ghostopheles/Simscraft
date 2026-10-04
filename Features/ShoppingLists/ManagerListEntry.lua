@@ -40,15 +40,13 @@ end
 function SimscraftShoppingListManagerListEntryMixin:Init(data)
 	local name = data.Name;
 	self.NameText:SetText(name);
-	self.Name = name;
-
 	self.SizeText:SetFormattedText("%d unique items", data.UniqueItems);
 
 	local isWishlist = name == internal.Constants.WISHLIST_NAME;
 	self.DeleteButton:SetShown(not isWishlist);
 	self.LastUpdatedText:SetShown(isWishlist);
 
-	local shoppingList = internal.ShoppingListManager.GetShoppingList(self.Name);
+	local shoppingList = internal.ShoppingListManager.GetShoppingList(name);
 
 	if isWishlist then
 		self:UpdateTimestamp(shoppingList.LastUpdatedAt);
@@ -58,24 +56,30 @@ function SimscraftShoppingListManagerListEntryMixin:Init(data)
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnShow()
-	if not self.Name then
+	if not self.GetData then
 		return;
 	end
 
-	local shoppingList = internal.ShoppingListManager.GetShoppingList(self.Name);
+	local data = self:GetData();
+	local name = data.Name;
+	local shoppingList = internal.ShoppingListManager.GetShoppingList(name);
 	self:UpdateTimestamp(shoppingList.LastUpdatedAt);
 	self:UpdateFulfillmentState(shoppingList.IsFulfilled);
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnMouseUp()
-	Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, self.Name);
+	local data = self:GetData();
+	local name = data.Name;
+	Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, name);
 end
 
 function SimscraftShoppingListManagerListEntryMixin:OnDeleteButtonPressed()
+	local data = self:GetData();
+	local name = data.Name;
 	if not IsShiftKeyDown() then
-		internal.ShoppingListManager.ConfirmShoppingListDeletion(self.Name);
+		internal.ShoppingListManager.ConfirmShoppingListDeletion(name);
 	else
-		internal.ShoppingListManager.RemoveShoppingList(self.Name);
+		internal.ShoppingListManager.RemoveShoppingList(name);
 	end
 end
 
