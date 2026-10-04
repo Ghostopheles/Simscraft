@@ -82,11 +82,6 @@
 						<Anchor point="LEFT" relativeKey="$parent.ItemButton" relativePoint="RIGHT" x="10" />
 					</Anchors>
 				</FontString>
-				<FontString parentKey="QuantityText" font="GameFontWhite" text="QUANTITY" justifyH="RIGHT" justifyV="MIDDLE" hidden="true">
-					<Anchors>
-						<Anchor point="RIGHT" relativeKey="$parent.DeleteButton" relativePoint="LEFT" x="-10"/>
-					</Anchors>
-				</FontString>
 			</Layer>
 			<Layer level="BACKGROUND">
 				<Texture parentKey="Background" atlas="TalkingHeads-TextBackground" setAllPoints="true"/>

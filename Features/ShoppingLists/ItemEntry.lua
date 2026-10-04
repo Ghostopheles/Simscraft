@@ -11,11 +11,8 @@ SimscraftShoppingListItemEntryMixin = {};
 function SimscraftShoppingListItemEntryMixin:OnLoad()
 	self.DeleteButton:SetScript("OnClick", function() self:OnDeleteButtonClicked(); end);
 
-	self.Name:SetPoint("RIGHT", self.QuantityText, "LEFT", -10, 0);
+	self.Name:SetPoint("RIGHT", self.QuantityDisplay, "LEFT", -5, 0);
 	self.Name:SetTextScale(1.2);
-
-	self.QuantityText:SetTextScale(1.2);
-	internal.AddTooltip(self.QuantityText);
 
 	self.InspectButton:SetScript("OnClick", function() self:OnInspectButtonClicked(); end);
 	self.InspectButton.tooltipText = "View this decor item in the housing catalog.";
@@ -189,6 +186,8 @@ function SimscraftShoppingListItemEntryQuantityDisplayMixin:OnLoad()
 	end);
 
 	internal.AddTooltip(self, "ANCHOR_TOP");
+
+	self.Text:SetTextScale(1.2);
 end
 
 function SimscraftShoppingListItemEntryQuantityDisplayMixin:OnMouseUp(buttonName)
