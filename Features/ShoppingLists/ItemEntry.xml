@@ -59,7 +59,7 @@
 			</Button>
 
 			<Frame parentKey="QuantityDisplay" inherits="SimscraftShoppingListItemEntryQuantityDisplayTemplate">
-				<Size x="60" y="20"/>
+				<Size x="65" y="20"/>
 				<Anchors>
 					<Anchor point="RIGHT" relativeKey="$parent.DeleteButton" relativePoint="LEFT" x="-10"/>
 				</Anchors>
