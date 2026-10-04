@@ -1,6 +1,9 @@
 # Simscraft
 A housing quality-of-life addon.
 
+## Shopping Lists
+Import a shopping list from [housing.wowdb.com](https://housing.wowdb.com) to help keep track of the items you need for your newest build.
+
 ## AutoBuy
 Simscraft features a (state-of-the-art) shopping cart, usable at any vendor that sells decor. Simply shift right-click on the item you want to add to the cart, and voila. You can change the amount you want to buy in the editbox, or by shift right-clicking the item repeatedly.
 
