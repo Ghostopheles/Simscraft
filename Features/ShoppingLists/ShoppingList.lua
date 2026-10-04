@@ -83,14 +83,21 @@ function SimscraftShoppingListImportFrameMixin:Validate()
 	local nameAvailable = internal.ShoppingListManager.IsShoppingListNameAvailable(name);
 	if not nameAvailable then
 		PlaySound(SOUNDKIT.ACCOUNT_STORE_CATEGORY_SELECT);
-		internal.Print(format("Shopping list name '%s' is already taken or is invalid.", name));
+		internal.Print(format("Shopping list name '%s' is already taken.", name));
+		return false;
+	end
+
+	local nameIsNumber = tonumber(name) ~= nil;
+	if nameIsNumber then
+		PlaySound(SOUNDKIT.ACCOUNT_STORE_CATEGORY_SELECT);
+		internal.Print(format("Shopping list name cannot be a number.", name));
 		return false;
 	end
 
 	local importString = strtrim(self.EditBox:GetText());
 	if not importString or importString == "" then
 		PlaySound(SOUNDKIT.ACCOUNT_STORE_CATEGORY_SELECT);
-		internal.Print("Shopping list import string is missing or invalid.");
+		internal.Print("Shopping list import string is required.");
 		return false;
 	end
 
