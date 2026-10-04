@@ -466,6 +466,10 @@ function SimscraftShoppingListManagerFrameMixin:Populate(lists)
 			return true;
 		end
 
+		if not a or b.Name == internal.Constants.WISHLIST_NAME then
+			return false;
+		end
+
 		return a.Name < b.Name;
 	end);
 
