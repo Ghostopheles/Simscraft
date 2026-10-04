@@ -113,7 +113,7 @@ function SimscraftShoppingListItemEntryMixin:Init(data)
 	self:SetRequiredQuantity(quantity);
 
 	self:UpdateOwnedQuantity();
-	self:UpdateQuantityText();
+	self:UpdateQuantityDisplay();
 end
 
 function SimscraftShoppingListItemEntryMixin:OnDeleteButtonClicked()
@@ -142,6 +142,10 @@ function SimscraftShoppingListItemEntryMixin:SetItem(itemID)
 	end);
 end
 
+function SimscraftShoppingListItemEntryMixin:GetItemID()
+	return self.ItemID;
+end
+
 function SimscraftShoppingListItemEntryMixin:SetRequiredQuantity(quantity)
 	self.RequiredQuantity = quantity;
 end
@@ -156,7 +160,81 @@ function SimscraftShoppingListItemEntryMixin:UpdateOwnedQuantity()
 	self.PlacedQuantity = placed;
 end
 
-function SimscraftShoppingListItemEntryMixin:UpdateQuantityText()
+function SimscraftShoppingListItemEntryMixin:UpdateQuantityDisplay()
+	self.QuantityDisplay:SetQuantities(self.PlacedQuantity, self.StoredQuantity, self.RequiredQuantity);
+	self.QuantityDisplay:SetEditable(false);
+end
+
+------------
+
+SimscraftShoppingListItemEntryQuantityDisplayMixin = {};
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:OnLoad()
+	self.Editable = false;
+	self.PlacedQuantity = 0;
+	self.StoredQuantity = 0;
+	self.RequiredQuantity = 0;
+
+	self.EditBox:HookScript("OnEnterPressed", function()
+		self:Commit();
+		self:SetEditable(false);
+	end);
+
+	self.EditBox:HookScript("OnEscapePressed", function()
+		self:SetEditable(false);
+	end);
+
+	self.EditBox:HookScript("OnEditFocusLost", function()
+		self:SetEditable(false);
+	end);
+
+	internal.AddTooltip(self, "ANCHOR_TOP");
+end
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:OnMouseUp(buttonName)
+	if buttonName ~= "RightButton" or self.Editable then
+		return;
+	end
+
+	self:SetEditable(true);
+end
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:SetText(text)
+	self.Text:SetText(text);
+end
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:SetEditBoxText(text)
+	self.EditBox:SetText(text);
+end
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:SetEditable(editable)
+	if editable == self.Editable then
+		return;
+	end
+
+	if editable then
+		PlaySound(SOUNDKIT.ACCOUNT_STORE_ITEM_SELECT);
+	else
+		PlaySound(SOUNDKIT.ACCOUNT_STORE_ITEM_REFUND);
+	end
+
+	self.Editable = editable;
+	self:Update();
+end
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:Commit()
+	local newQuantity = self.EditBox:GetNumber();
+	if newQuantity == self.RequiredQuantity then
+		return;
+	end
+
+	local itemID = self:GetParent():GetItemID();
+	Registry:TriggerEvent(Events.SHOPPING_LIST_SET_TARGET_QUANTITY, itemID, newQuantity);
+
+	PlaySound(SOUNDKIT.ACCOUNT_STORE_CATEGORY_SELECT);
+end
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:UpdateText()
 	local owned = self.StoredQuantity;
 	local required = self.RequiredQuantity;
 	local text = format("%d/%d", owned, required);
@@ -167,12 +245,36 @@ function SimscraftShoppingListItemEntryMixin:UpdateQuantityText()
 
 	local icon = CreateAtlasMarkup("house-chest-icon", 20, 20);
 	text = format("%s %s", icon, text);
-	self.QuantityText:SetTextToFit(text);
+	self.Text:SetTextToFit(text);
 
 	local requiredFmt = "Required: ";
 	local requiredColor = owned < required and RED_FONT_COLOR or GREEN_FONT_COLOR;
 	requiredFmt = requiredFmt .. requiredColor:WrapTextInColorCode("%d");
 
 	local tooltipText = format("Placed: %d\nStorage: %d\n\n" .. requiredFmt, self.PlacedQuantity, self.StoredQuantity, self.RequiredQuantity);
-	self.QuantityText.tooltipText = WHITE_FONT_COLOR:WrapTextInColorCode(tooltipText);
+
+	local rightClickText = YELLOW_FONT_COLOR:WrapTextInColorCode("[Right-click]");
+	tooltipText = tooltipText .. internal.ThemeColor:WrapTextInColorCode(format("\n%s to edit quantity", rightClickText));
+
+	self.tooltipText = WHITE_FONT_COLOR:WrapTextInColorCode(tooltipText);
+end
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:UpdateEditBox()
+	self.EditBox:SetNumber(self.RequiredQuantity);
+end
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:Update()
+	self:UpdateText();
+	self:UpdateEditBox();
+
+	self.Text:SetShown(not self.Editable);
+	self.EditBox:SetShown(self.Editable);
+end
+
+function SimscraftShoppingListItemEntryQuantityDisplayMixin:SetQuantities(placed, stored, required)
+	self.PlacedQuantity = placed;
+	self.StoredQuantity = stored;
+	self.RequiredQuantity = required;
+
+	self:Update();
 end
