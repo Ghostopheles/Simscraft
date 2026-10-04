@@ -15,6 +15,7 @@ end);
 
 ---@class SimscraftCatalog
 local Catalog = {};
+internal.Catalog = Catalog;
 
 function Catalog.SetSearchText(searchText)
 	if searchText ~= SEARCHER:GetSearchText() then
@@ -46,4 +47,37 @@ end
 
 ------------
 
-internal.Catalog = Catalog;
+local function OnCatalogEntryInteract(_, entry, buttonName, isDrag)
+	if isDrag or not IsControlKeyDown() then
+		return;
+	end
+
+	local data = entry:GetEntryData();
+	if data.entryType ~= Enum.HousingCatalogEntryType.Decor then
+		return;
+	end
+
+	local itemID = data.itemID;
+	internal.ShoppingListUtil.AddItemToWishlistByItemID(itemID);
+
+	PlaySound(SOUNDKIT.HOUSING_BLUEPRINTS_EXPORT_SUCCESS);
+
+	local _, itemLink = C_Item.GetItemInfo(itemID);
+	local msg = format("Added %s to your wishlist!", itemLink);
+	internal.Print(msg);
+end
+
+EventRegistry:RegisterCallback("HousingCatalogEntry.OnInteract", OnCatalogEntryInteract);
+
+local function OnCatalogEntryTooltipCreated(_, entry, tooltip)
+	local data = entry:GetEntryData();
+	if data.entryType ~= Enum.HousingCatalogEntryType.Decor then
+		return;
+	end
+
+	local rightClickText = YELLOW_FONT_COLOR:WrapTextInColorCode("[Control+Click]");
+	local line = internal.ThemeColor:WrapTextInColorCode(format("%s to add this item to your wishlist", rightClickText));
+	GameTooltip_AddBodyLine(tooltip, line);
+end
+
+EventRegistry:RegisterCallback("HousingCatalogEntry.TooltipCreated", OnCatalogEntryTooltipCreated);

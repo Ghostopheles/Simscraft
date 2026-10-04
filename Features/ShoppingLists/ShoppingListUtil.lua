@@ -186,6 +186,13 @@ function ShoppingListUtil.IsListFulfilled(shoppingList)
 	return true;
 end
 
+---@param itemID number
+function ShoppingListUtil.AddItemToWishlistByItemID(itemID)
+	local wishlist = internal.ShoppingListManager.GetShoppingList(internal.Constants.WISHLIST_NAME);
+	ShoppingListUtil.AddItemToListByID(wishlist, itemID);
+	Registry:TriggerEvent(Events.SHOPPING_LIST_UPDATED, wishlist);
+end
+
 ------------
 
 internal.ShoppingListUtil = ShoppingListUtil;
