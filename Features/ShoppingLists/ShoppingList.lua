@@ -172,6 +172,14 @@ function SimscraftShoppingListFrameMixin:OnLoad()
 	header.RenameEditBox:SetScript("OnEnterPressed", function()
 		self:OnRenameEditBoxEnterPressed();
 	end);
+
+	header.RenameEditBox:SetScript("OnEscapePressed", function()
+		self:SetNameEditModeEnabled(false);
+	end);
+
+	header.RenameEditBox:SetScript("OnEditFocusLost", function()
+		self:SetNameEditModeEnabled(false);
+	end);
 end
 
 function SimscraftShoppingListFrameMixin:OnShoppingListShow(list)
@@ -234,6 +242,11 @@ end
 function SimscraftShoppingListFrameMixin:OnRenameEditBoxEnterPressed()
 	local header = self.Header;
 	local newName = header.RenameEditBox:GetText();
+	if newName == self.ActiveList.Name then
+		self:SetNameEditModeEnabled(false);
+		return;
+	end
+
 	local isValidName = internal.ShoppingListManager.IsShoppingListNameAvailable(newName);
 	if not isValidName then
 		internal.Print("Invalid name"); --TODO: make this a good error
