@@ -475,6 +475,7 @@ end
 function SimscraftShoppingListManagerFrameMixin:SetFrameSelected(frame)
 	self.SelectionHighlight:SetAllPoints(frame);
 	self.SelectionHighlight:Show();
+	self.SelectedFrame = frame;
 end
 
 function SimscraftShoppingListManagerFrameMixin:ScrollToSelection()
@@ -498,8 +499,7 @@ function SimscraftShoppingListManagerFrameMixin:SelectListByName(name)
 end
 
 function SimscraftShoppingListManagerFrameMixin:CheckSelectionAfterLoad()
-	local selection = self.SelectionBehavior;
-	if not selection:HasSelection() then
+	if not self.SelectedFrame then
 		local first = self.DataProvider:Find(1);
 		if first then
 			Registry:TriggerEvent(Events.SHOPPING_LIST_SELECTED, first.Name);
