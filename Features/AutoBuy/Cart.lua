@@ -464,7 +464,7 @@ end
 
 function Cart.GetPlayerCurrencyAmount(currencyLink)
 	local linkType = LinkUtil.ExtractLink(currencyLink);
-	if linkType == LinkTypes.Currency then
+	if linkType == "currency" then
 		local currencyInfo = C_CurrencyInfo.GetCurrencyInfoFromLink(currencyLink);
 		return currencyInfo.quantity;
 	elseif linkType == LinkTypes.Item then
